@@ -1,11 +1,9 @@
 import { Card, CardFooter, CardHeader, CardTitle } from "./ui/card";
 import ResponsesTabs from "./ResponsesTabs";
-import { prisma } from "@/lib/prisma";
+import { fetchFormResponsesCount } from "@/lib/data";
 
 async function ResponsesHeader({ id }: { id: string }) {
-  const responsesCount = await prisma.response.count({
-    where: { formId: id },
-  });
+  const responsesCount = await fetchFormResponsesCount(id); // Заменяем вызов Prisma на Supabase
 
   return (
     <Card>

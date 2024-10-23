@@ -1,66 +1,53 @@
 "use server";
 
-import { prisma } from "./prisma";
+import { supabase } from "@/lib/supabaseClient";
 import { redirect } from "next/navigation";
 import { auth } from "@clerk/nextjs/server";
 import { clerkClient } from "@clerk/nextjs/server";
-import { QuestionType } from "@prisma/client";
+import { v4 as uuidv4 } from "uuid";
 
 // Функция для отправки данных формы (ответов)
 export async function addFormData(formData: FormData): Promise<void> {
-  // Санитизируем данные
   const sanitizedData = sanitizeFormData(formData);
-
   const formId = sanitizedData.get("formId")?.toString();
 
   if (!formId) {
     throw new Error("Отсутствует идентификатор формы.");
   }
 
-  // Собираем все данные формы из санитизированных данных
-  const entries = Array.from(sanitizedData.entries());
   const answers: Record<string, string> = {};
+  sanitizedData.forEach((value, key) => {
+    if (!key.startsWith("$ACTION") && key !== "formId") {
+      answers[key] = value.toString();
+    }
+  });
 
-  for (const [key, value] of entries) {
-    if (key.startsWith("$ACTION") || key === "formId") continue;
-    answers[key] = value.toString();
-  }
-
-  // Получаем userId из аутентификации (если интегрировано)
   const { userId } = auth();
 
-  try {
-    // Сохраняем ответ в базе данных
-    await prisma.response.create({
-      data: {
-        formId,
-        answers,
-        userId: userId ?? null, // Используем userId или null, если пользователь не аутентифицирован
-      },
-    });
-  } catch (error) {
-    console.error("Ошибка базы данных:", error);
-    throw new Error("Не удалось отправить данные формы.");
+  const { error } = await supabase.from("Response").insert({
+    id: uuidv4(),
+    formId,
+    answers,
+    userId: userId ?? null,
+    createdAt: new Date().toISOString(),
+  });
+
+  if (error) {
+    throw new Error("Не удалось отправить данные формы: " + error.message);
   }
 
-  // Вызываем redirect вне блока try...catch
   redirect(`/forms/${formId}/success`);
 }
 
 function sanitizeFormData(formData: FormData): FormData {
   const sanitized = new FormData();
-  const entries = Array.from(formData.entries());
-
-  for (let i = 0; i < entries.length; i++) {
-    const [key, value] = entries[i];
+  formData.forEach((value, key) => {
     if (typeof value === "string") {
-      // Удаляем нулевые байты
       sanitized.append(key, value.replace(/\0/g, ""));
     } else {
       sanitized.append(key, value);
     }
-  }
-
+  });
   return sanitized;
 }
 
@@ -71,122 +58,80 @@ export async function createForm(formData: FormData): Promise<void> {
   const isPublic = formData.get("isPublic") === "on";
   const topic = formData.get("topic")?.toString() || "";
   const imageUrl = formData.get("imageUrl")?.toString() || "";
-  const tagsString = formData.get("tags")?.toString() || "";
-  const tags = tagsString
-    .split(",")
-    .map((tag) => tag.trim())
-    .filter((tag) => tag.length > 0);
 
+  // Проверка, что поле title заполнено
   if (!title) {
     throw new Error("Поле 'title' обязательно для заполнения.");
   }
 
-  // Получаем текущего пользователя
+  // Получение идентификатора пользователя
   const { userId } = auth();
   if (!userId) {
     throw new Error("Пользователь не авторизован.");
   }
 
-  // Получаем данные пользователя из Clerk
+  // Получение данных пользователя из Clerk
   const user = await clerkClient.users.getUser(userId);
 
-  // Проверяем, есть ли пользователь в нашей базе данных
-  let dbUser = await prisma.user.findUnique({
-    where: { id: userId },
+  // Создание или обновление пользователя в базе данных Supabase
+  const { error: createUserError } = await supabase.from("User").upsert({
+    id: userId,
+    email: user.emailAddresses[0].emailAddress,
+    name: user.firstName
+      ? `${user.firstName} ${user.lastName}`
+      : user.username || user.emailAddresses[0].emailAddress,
+    createdAt: new Date().toISOString(),
+    updatedAt: new Date().toISOString(),
   });
 
-  if (!dbUser) {
-    // Если нет, создаем пользователя в нашей базе данных
-    dbUser = await prisma.user.create({
-      data: {
-        id: userId,
-        email: user.emailAddresses[0].emailAddress,
-        name: user.firstName
-          ? `${user.firstName} ${user.lastName}`
-          : user.username || user.emailAddresses[0].emailAddress,
-        role: "USER",
-        status: "ACTIVE",
-      },
-    });
+  if (createUserError) {
+    throw new Error(
+      "Не удалось создать пользователя: " + createUserError.message
+    );
   }
 
-  // Собираем вопросы
-  type QuestionData = {
-    title: string;
-    type: QuestionType;
-    isRequired: boolean;
-    options: string[];
-    order: number;
-  };
+  // Вставка данных формы в Supabase
+  const { data: newForm, error: createFormError } = await supabase
+    .from("Form")
+    .insert({
+      id: uuidv4(), // Генерация уникального ID формы
+      title,
+      description,
+      isPublic,
+      topic,
+      imageUrl,
+      authorId: userId,
+      createdAt: new Date().toISOString(),
+      updatedAt: new Date().toISOString(),
+    })
+    .select()
+    .single();
 
-  const questionsData: QuestionData[] = [];
-  const questionIds = formData.getAll("questionIds[]");
-
-  questionIds.forEach((qid, index) => {
-    const id = qid.toString();
-    const questionTitle = formData.get(`questionTitle_${id}`)?.toString() || "";
-    const questionTypeValue = formData.get(`questionType_${id}`)?.toString();
-
-    if (!questionTitle) {
-      throw new Error(`Поле 'title' обязательно для вопроса с ID ${id}.`);
-    }
-
-    if (
-      !questionTypeValue ||
-      !Object.values(QuestionType).includes(questionTypeValue as QuestionType)
-    ) {
-      throw new Error(`Некорректный тип вопроса для вопроса с ID ${id}.`);
-    }
-
-    const questionType = questionTypeValue as QuestionType;
-    const isRequired = formData.get(`questionRequired_${id}`) === "on";
-    const options = formData
-      .getAll(`questionOptions_${id}[]`)
-      .map((option) => option.toString());
-
-    questionsData.push({
-      title: questionTitle,
-      type: questionType,
-      isRequired,
-      options,
-      order: index + 1,
-    });
-  });
-
-  let newForm;
-  try {
-    newForm = await prisma.form.create({
-      data: {
-        title,
-        description,
-        isPublic,
-        topic,
-        imageUrl,
-        authorId: dbUser.id,
-        tags: {
-          connectOrCreate: tags.map((tagName) => ({
-            where: { name: tagName },
-            create: { name: tagName },
-          })),
-        },
-        questions: {
-          create: questionsData.map((q) => ({
-            title: q.title,
-            type: q.type,
-            isRequired: q.isRequired,
-            options: q.options,
-            order: q.order,
-          })),
-        },
-      },
-    });
-  } catch (error) {
-    console.error("Ошибка базы данных:", error);
-    throw new Error("Не удалось создать форму.");
+  if (createFormError) {
+    throw new Error("Не удалось создать форму: " + createFormError.message);
   }
 
-  // Вызываем redirect вне блока try...catch
+  // Перенаправление пользователя на страницу с формой после создания
   redirect(`/dashboard/forms/${newForm.id}`);
+}
+
+function buildQuestionsData(formData: FormData) {
+  const questionIds = formData.getAll("questionIds[]");
+  return questionIds.map((qid, index) => {
+    const id = uuidv4();
+    const title = formData.get(`questionTitle_${qid}`)?.toString() || "";
+    const type = formData.get(`questionType_${qid}`)?.toString() as
+      | "SINGLE_LINE_TEXT"
+      | "MULTI_LINE_TEXT"
+      | "POSITIVE_INTEGER"
+      | "CHECKBOX"
+      | "RADIO_BUTTON";
+    const isRequired = formData.get(`questionRequired_${qid}`) === "on";
+    const options = formData
+      .getAll(`questionOptions_${qid}[]`)
+      .map((option) => option.toString());
+    return { id, title, type, isRequired, options, order: index + 1 };
+  });
 }
 
 // Функция для обновления существующей формы
@@ -199,125 +144,87 @@ export async function updateForm(
   const isPublic = formData.get("isPublic") === "on";
   const topic = formData.get("topic")?.toString() || "";
   const imageUrl = formData.get("imageUrl")?.toString() || "";
-  const tags = formData.getAll("tags[]").map((tag) => tag.toString());
 
+  // Преобразуем теги в массив строк
+  const tagsString = formData.get("tags")?.toString() || "";
+  const tags = tagsString
+    .split(",")
+    .map((tag) => tag.trim())
+    .filter((tag) => tag.length > 0);
+
+  // Проверка, что поле title заполнено
   if (!title) {
     throw new Error("Поле 'title' обязательно для заполнения.");
   }
 
-  // Собираем обновлённые вопросы
-  type QuestionUpdateData = {
-    id?: string; // Может быть undefined для новых вопросов
-    title: string;
-    type: QuestionType;
-    isRequired: boolean;
-    options: string[];
-    order: number;
-  };
+  const questions = buildQuestionsData(formData); // Используем questions для обновления вопросов
 
-  const questionsData: QuestionUpdateData[] = [];
-  const questionIds = formData.getAll("questionIds[]");
+  // Обновление формы в Supabase
+  const { error: updateFormError } = await supabase
+    .from("Form")
+    .update({
+      title,
+      description,
+      isPublic,
+      topic,
+      imageUrl,
+      updatedAt: new Date().toISOString(),
+    })
+    .eq("id", formId);
 
-  questionIds.forEach((qid, index) => {
-    const id = qid.toString();
-    const questionTitle = formData.get(`questionTitle_${id}`)?.toString() || "";
-    const questionTypeValue = formData.get(`questionType_${id}`)?.toString();
-
-    if (!questionTitle) {
-      throw new Error(`Поле 'title' обязательно для вопроса с ID ${id}.`);
-    }
-
-    if (
-      !questionTypeValue ||
-      !Object.values(QuestionType).includes(questionTypeValue as QuestionType)
-    ) {
-      throw new Error(`Некорректный тип вопроса для вопроса с ID ${id}.`);
-    }
-
-    const questionType = questionTypeValue as QuestionType;
-    const isRequired = formData.get(`questionRequired_${id}`) === "on";
-    const options = formData
-      .getAll(`questionOptions_${id}[]`)
-      .map((option) => option.toString());
-
-    questionsData.push({
-      id,
-      title: questionTitle,
-      type: questionType,
-      isRequired,
-      options,
-      order: index + 1,
-    });
-  });
-
-  try {
-    // Обновляем форму
-    await prisma.form.update({
-      where: { id: formId },
-      data: {
-        title,
-        description,
-        isPublic,
-        topic,
-        imageUrl,
-        tags: {
-          set: [],
-          connectOrCreate: tags.map((tagName) => ({
-            where: { name: tagName },
-            create: { name: tagName },
-          })),
-        },
-      },
-    });
-
-    // Обновляем вопросы
-    for (const questionData of questionsData) {
-      if (questionData.id) {
-        // Обновляем существующий вопрос
-        await prisma.question.update({
-          where: { id: questionData.id },
-          data: {
-            title: questionData.title,
-            type: questionData.type,
-            isRequired: questionData.isRequired,
-            options: questionData.options,
-            order: questionData.order,
-          },
-        });
-      } else {
-        // Создаём новый вопрос
-        await prisma.question.create({
-          data: {
-            formId,
-            title: questionData.title,
-            type: questionData.type,
-            isRequired: questionData.isRequired,
-            options: questionData.options,
-            order: questionData.order,
-          },
-        });
-      }
-    }
-
-    redirect(`/dashboard/forms/${formId}`);
-  } catch (error) {
-    console.error("Ошибка базы данных:", error);
-    throw new Error("Не удалось обновить форму.");
+  if (updateFormError) {
+    throw new Error("Не удалось обновить форму: " + updateFormError.message);
   }
+
+  // Обновление или вставка вопросов
+  for (const questionData of questions) {
+    const { error: updateQuestionError } = await supabase
+      .from("Question")
+      .upsert({
+        id: uuidv4(),
+        formId,
+        title: questionData.title,
+        type: questionData.type,
+        isRequired: questionData.isRequired,
+        options: questionData.options,
+        order: questionData.order,
+      });
+
+    if (updateQuestionError) {
+      throw new Error(
+        "Не удалось обновить вопросы: " + updateQuestionError.message
+      );
+    }
+  }
+
+  // Добавление или обновление тегов для формы
+  if (tags.length > 0) {
+    // Здесь предполагается, что есть отдельная таблица для тегов или связь между тегами и формами
+    const { error: updateTagsError } = await supabase.from("FormTags").upsert(
+      tags.map((tag) => ({
+        formId,
+        tagName: tag,
+      }))
+    );
+
+    if (updateTagsError) {
+      throw new Error("Не удалось обновить теги: " + updateTagsError.message);
+    }
+  }
+
+  // Перенаправление после успешного обновления
+  redirect(`/dashboard/forms/${formId}`);
 }
 
 // Функция для удаления формы
 export async function deleteForm(formId: string): Promise<void> {
-  try {
-    await prisma.form.delete({
-      where: { id: formId },
-    });
+  const { error } = await supabase.from("Form").delete().eq("id", formId);
 
-    redirect(`/dashboard`);
-  } catch (error) {
-    console.error("Ошибка базы данных:", error);
-    throw new Error("Не удалось удалить форму.");
+  if (error) {
+    throw new Error("Не удалось удалить форму: " + error.message);
   }
+
+  redirect(`/dashboard`);
 }
 
 // Функция для добавления комментария к форме
@@ -326,17 +233,16 @@ export async function addComment(
   content: string,
   authorId: string
 ): Promise<void> {
-  try {
-    await prisma.comment.create({
-      data: {
-        formId,
-        content,
-        authorId,
-      },
-    });
-  } catch (error) {
-    console.error("Ошибка базы данных:", error);
-    throw new Error("Не удалось добавить комментарий.");
+  const { error } = await supabase.from("Comment").insert({
+    id: uuidv4(),
+    formId,
+    content,
+    authorId,
+    createdAt: new Date().toISOString(),
+  });
+
+  if (error) {
+    throw new Error("Не удалось добавить комментарий: " + error.message);
   }
 }
 
@@ -345,59 +251,54 @@ export async function toggleLike(
   formId: string,
   userId: string
 ): Promise<void> {
-  try {
-    const existingLike = await prisma.like.findFirst({
-      where: {
-        formId,
-        userId,
-      },
+  const { data: existingLike } = await supabase
+    .from("Like")
+    .select("id")
+    .eq("formId", formId)
+    .eq("userId", userId)
+    .single();
+
+  if (existingLike) {
+    const { error: deleteError } = await supabase
+      .from("Like")
+      .delete()
+      .eq("id", existingLike.id);
+
+    if (deleteError) {
+      throw new Error("Не удалось удалить лайк: " + deleteError.message);
+    }
+  } else {
+    const { error: insertError } = await supabase.from("Like").insert({
+      id: uuidv4(),
+      formId,
+      userId,
+      createdAt: new Date().toISOString(),
     });
 
-    if (existingLike) {
-      // Удаляем лайк
-      await prisma.like.delete({
-        where: {
-          id: existingLike.id,
-        },
-      });
-    } else {
-      // Добавляем лайк
-      await prisma.like.create({
-        data: {
-          formId,
-          userId,
-        },
-      });
+    if (insertError) {
+      throw new Error("Не удалось добавить лайк: " + insertError.message);
     }
-  } catch (error) {
-    console.error("Ошибка базы данных:", error);
-    throw new Error("Не удалось обработать лайк.");
   }
 }
 
 // Функция для поиска форм
 export async function searchForms(query: string) {
-  try {
-    const forms = await prisma.form.findMany({
-      where: {
-        OR: [
-          { title: { contains: query, mode: "insensitive" } },
-          { description: { contains: query, mode: "insensitive" } },
-          {
-            tags: { some: { name: { contains: query, mode: "insensitive" } } },
-          },
-        ],
-      },
-      include: {
-        author: true,
-        questions: true,
-        tags: true,
-      },
-    });
+  const { data: forms, error } = await supabase
+    .from("Form")
+    .select(
+      `
+      id, title, description, topic, tags(name),
+      author(id, name, email), questions(id, title, type)
+    `
+    )
+    .ilike("title", `%${query}%`)
+    .ilike("description", `%${query}%`)
+    .ilike("tags.name", `%${query}%`);
 
-    return forms;
-  } catch (error) {
+  if (error) {
     console.error("Ошибка базы данных:", error);
     return [];
   }
+
+  return forms;
 }

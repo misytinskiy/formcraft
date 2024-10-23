@@ -7,28 +7,22 @@ import {
   CardTitle,
 } from "@/components/ui/card";
 import { fetchFormById } from "@/lib/data";
-import { prisma } from "@/lib/prisma";
+import { fetchFormResponses } from "@/lib/data";
 
 async function ResponsesPage({ params: { id } }: { params: { id: string } }) {
-  // Получаем форму по ID, включая вопросы
-  const form = await fetchFormById(id);
+  const form = await fetchFormById(id); // Получаем форму по ID с использованием Supabase
 
   if (!form) {
     return <div>Форма не найдена</div>;
   }
 
-  // Получаем все ответы на эту форму
-  const responses = await prisma.response.findMany({
-    where: { formId: id },
-  });
+  const responses = await fetchFormResponses(id); // Получаем ответы на форму
 
-  // Обрабатываем каждый вопрос
   const questions = form.questions.map((question) => {
-    // Извлекаем ответы на текущий вопрос из всех ответов формы
     const questionResponses = responses
       .map((response) => {
         const answers = response.answers as Record<string, string | string[]>;
-        return answers[question.id]; // Используем question.id в качестве ключа
+        return answers[question.id];
       })
       .filter((answer) => answer !== undefined);
 
@@ -41,12 +35,10 @@ async function ResponsesPage({ params: { id } }: { params: { id: string } }) {
     }[] = [];
 
     if (question.type === "RADIO_BUTTON" || question.type === "CHECKBOX") {
-      // Для вопросов с вариантами ответов считаем количество выборов каждого варианта
       const responseCounts: Record<string, number> = {};
 
       questionResponses.forEach((answer) => {
         if (Array.isArray(answer)) {
-          // Для CHECKBOX, где можно выбрать несколько вариантов
           answer.forEach((option) => {
             responseCounts[option] = (responseCounts[option] || 0) + 1;
           });
@@ -59,15 +51,14 @@ async function ResponsesPage({ params: { id } }: { params: { id: string } }) {
         ([value, count]) => ({
           value,
           count,
-          marker: question.id, // Добавляем marker, чтобы соответствовать типу IndividualResponse
+          marker: question.id,
         })
       );
     } else {
-      // Для открытых вопросов можно просто отобразить все ответы или обработать их иначе
       aggregatedResponses = questionResponses.map((value) => ({
         value: value.toString(),
         count: 1,
-        marker: question.id, // Добавляем marker
+        marker: question.id,
       }));
     }
 

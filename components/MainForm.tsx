@@ -1,4 +1,3 @@
-import { FormWithRelations } from "@/types";
 import {
   Card,
   CardContent,
@@ -18,6 +17,7 @@ import { addFormData } from "@/lib/actions";
 import { Checkbox } from "./ui/checkbox";
 import { Textarea } from "./ui/textarea";
 import SubmitButton from "./SubmitButton";
+import { FormWithRelations } from "@/types";
 
 function MainForm({
   form,

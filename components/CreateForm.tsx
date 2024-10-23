@@ -15,9 +15,8 @@ import {
   SelectTrigger,
   SelectValue,
 } from "./ui/select";
-
 import { createForm } from "@/lib/actions";
-import { QuestionType } from "@prisma/client";
+import { QuestionType } from "@/types";
 
 interface Question {
   id: string;
@@ -74,7 +73,7 @@ export default function CreateForm() {
     formData.delete("tags[]");
     form.tags.forEach((tag) => formData.append("tags[]", tag));
 
-    // Вызываем серверное действие для создания формы
+    // Вызываем серверное действие для создания формы через Supabase
     await createForm(formData);
     router.push("/dashboard");
   };

@@ -1,4 +1,3 @@
-import { Prisma } from "@prisma/client";
 import {
   Card,
   CardContent,
@@ -8,25 +7,18 @@ import {
 } from "./ui/card";
 import { Button } from "./ui/button";
 import Link from "next/link";
-
-type FormWithRelations = Prisma.FormGetPayload<{
-  include: {
-    author: true;
-    questions: true;
-    tags: true;
-  };
-}>;
+import { FormWithRelations } from "@/types";
 
 function FormCard({ form }: { form: FormWithRelations }) {
   return (
     <Card>
       <CardHeader>
         <CardTitle>{form.title}</CardTitle>
-        <CardDescription>Author: {form.author.name}</CardDescription>
+        <CardDescription>Автор: {form.author.name}</CardDescription>
       </CardHeader>
       <CardContent>
         <Button variant={"outline"} asChild>
-          <Link href={`/dashboard/forms/${form.id}`}>View Details</Link>
+          <Link href={`/dashboard/forms/${form.id}`}>Подробнее</Link>
         </Button>
       </CardContent>
     </Card>

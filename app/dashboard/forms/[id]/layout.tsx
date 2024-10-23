@@ -1,7 +1,6 @@
 import FormPageHeader from "@/components/FormPageHeader";
 import { fetchFormById } from "@/lib/data";
 import { notFound } from "next/navigation";
-import { FormWithRelations } from "@/types";
 
 async function FormIdLayout({
   children,
@@ -10,7 +9,7 @@ async function FormIdLayout({
   children: React.ReactNode;
   params: { id: string };
 }) {
-  const form: FormWithRelations | null = await fetchFormById(id);
+  const form = await fetchFormById(id);
 
   if (!form) {
     notFound();
