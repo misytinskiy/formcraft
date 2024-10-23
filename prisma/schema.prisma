@@ -1,0 +1,106 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id        String   @id @default(uuid())
+  email     String   @unique
+  name      String?
+  role      Role     @default(USER)
+  status    Status   @default(ACTIVE)
+  forms     Form[]   @relation("UserForms")
+  comments  Comment[]
+  likes     Like[]
+  responses Response[]
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model Form {
+  id          String      @id @default(uuid())
+  title       String
+  description String?
+  topic       String
+  imageUrl    String?
+  isPublic    Boolean     @default(true)
+  author      User        @relation("UserForms", fields: [authorId], references: [id])
+  authorId    String
+  questions   Question[]
+  responses   Response[]
+  comments    Comment[]
+  likes       Like[]
+  tags        Tag[]       @relation("FormTags") // Убрали references: [id] здесь
+  createdAt   DateTime    @default(now())
+  updatedAt   DateTime    @updatedAt
+}
+
+model Question {
+  id          String       @id @default(uuid())
+  form        Form         @relation(fields: [formId], references: [id])
+  formId      String
+  title       String
+  description String?
+  type        QuestionType
+  isRequired  Boolean      @default(false)
+  order       Int
+  options     String[]     // Используется для типов с вариантами ответов
+}
+
+model Response {
+  id        String   @id @default(uuid())
+  form      Form     @relation(fields: [formId], references: [id])
+  formId    String
+  user      User?    @relation(fields: [userId], references: [id])
+  userId    String?
+  answers   Json
+  createdAt DateTime @default(now())
+}
+
+model Comment {
+  id        String   @id @default(uuid())
+  content   String
+  form      Form     @relation(fields: [formId], references: [id])
+  formId    String
+  author    User     @relation(fields: [authorId], references: [id])
+  authorId  String
+  createdAt DateTime @default(now())
+}
+
+model Like {
+  id     String @id @default(uuid())
+  form   Form   @relation(fields: [formId], references: [id])
+  formId String
+  user   User   @relation(fields: [userId], references: [id])
+  userId String
+
+  @@unique([formId, userId])
+}
+
+model Tag {
+  id    String @id @default(uuid())
+  name  String @unique
+  forms Form[] @relation("FormTags") // Убрали references: [id] здесь
+}
+
+enum Role {
+  USER
+  ADMIN
+}
+
+enum Status {
+  ACTIVE
+  BLOCKED
+}
+
+enum QuestionType {
+  SINGLE_LINE_TEXT
+  MULTI_LINE_TEXT
+  POSITIVE_INTEGER
+  CHECKBOX
+  RADIO_BUTTON
+}
