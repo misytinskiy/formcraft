@@ -7,6 +7,7 @@ import {
 import { fetchFormById } from "@/lib/data";
 import Link from "next/link";
 import { notFound } from "next/navigation";
+import { Button } from "@/components/ui/button";
 
 async function FormSuccessPage({ params: { id } }: { params: { id: string } }) {
   const form = await fetchFormById(id);
@@ -30,6 +31,12 @@ async function FormSuccessPage({ params: { id } }: { params: { id: string } }) {
             href={`/forms/${form.id}`}
           >
             Submit another response
+          </Link>
+
+          <Link href="/dashboard">
+            <Button className="mt-4" variant="outline">
+              Back to Dashboard
+            </Button>
           </Link>
         </CardHeader>
       </Card>

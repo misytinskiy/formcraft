@@ -1,10 +1,4 @@
-function FormIdLayout({
-  children,
-  params: { id },
-}: {
-  children: React.ReactNode;
-  params: { id: string };
-}) {
+function FormIdLayout({ children }: { children: React.ReactNode }) {
   return <div className="bg-violet-100 min-h-screen px-6">{children}</div>;
 }
 

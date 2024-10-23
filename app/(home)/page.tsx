@@ -1,28 +1,28 @@
 import AccessDenied from "@/components/AccessDenied";
 import CTAButtons from "@/components/CTAButtons";
-import { AccessibilityIcon, BarChartIcon, CogIcon } from "lucide-react";
+import { CheckCircleIcon, PieChartIcon, LinkIcon } from "lucide-react";
 import { Card, CardContent, CardHeader } from "@/components/ui/card";
 
 const features = [
   {
-    title: "Ease of Use",
+    title: "User-Friendly Design",
     description:
-      "Create and distribute your forms with just a few clicks. Our intuitive interface is designed for efficiency and comfort.",
-    icon: <AccessibilityIcon className="w-6 h-6" />,
+      "Easily create, manage, and distribute your forms in just a few steps. Our intuitive design is tailored for seamless navigation.",
+    icon: <CheckCircleIcon className="w-6 h-6" />,
     id: 1,
   },
   {
-    title: "Powerful Analysis",
+    title: "Advanced Data Analysis",
     description:
-      "Analyze responses with automatic summaries. Visualize your data with colorful charts and graphs.",
-    icon: <BarChartIcon className="w-6 h-6" />,
+      "Get automatic summaries and visualize your data effortlessly with dynamic charts and graphs.",
+    icon: <PieChartIcon className="w-6 h-6" />,
     id: 2,
   },
   {
-    title: "Seamless Integration",
+    title: "Flexible Integrations",
     description:
-      "Google Forms works seamlessly with other Google products, such as Google Sheets and Google Drive.",
-    icon: <CogIcon className="w-6 h-6" />,
+      "Connect FormCraft with the tools you already use for seamless workflows. Integrate with platforms like Google Sheets and more.",
+    icon: <LinkIcon className="w-6 h-6" />,
     id: 3,
   },
 ];
@@ -43,11 +43,11 @@ export default function Home({
               <div className="flex flex-col items-center space-y-4 text-center">
                 <div className="space-y-2">
                   <h1 className="text-3xl font-bold tracking-tighter mb-4 sm:text-4xl md:text-5xl lg:text-6xl/none">
-                    Get insights quickly, with FormCraft
+                    Discover Insights Instantly with FormCraft
                   </h1>
                   <p className="mx-auto max-w-[700px] text-gray-500 md:text-xl dark:text-gray-700">
-                    Easily create and share online forms and surveys, and
-                    analyze the responses in real time.
+                    Create and share online forms effortlessly, and analyze
+                    responses in real-time with advanced analytics.
                   </p>
                 </div>
 
@@ -59,11 +59,12 @@ export default function Home({
             <div className="container grid items-center mx-auto gap-4 px-4 md:px-6 lg:gap-10">
               <div className="space-y-3">
                 <h2 className="text-3xl font-bold tracking-tighter sm:text-4xl md:text-5xl ">
-                  Why FormCraft?
+                  Why Choose FormCraft?
                 </h2>
                 <p className="max-w-[700px] text-gray-500 md:text-xl/relaxed">
-                  Trusted by millions of teams worldwide, FormCraft helps you
-                  collect and organize information quickly and efficiently.
+                  Trusted by thousands of teams globally, FormCraft allows you
+                  to gather and organize information faster and more
+                  effectively.
                 </p>
               </div>
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">

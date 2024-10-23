@@ -1,5 +1,3 @@
-// components/FormList.tsx
-
 import { fetchAllForms } from "@/lib/data";
 import FormCard from "./FormCard";
 import Link from "next/link";
@@ -10,7 +8,6 @@ export default async function FormList() {
 
   return (
     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-      {/* Блок "Создать форму" */}
       <Link
         href="/dashboard/forms/new"
         className="border-dashed border-2 border-gray-300 flex items-center justify-center p-4 rounded-md hover:border-blue-500 hover:bg-blue-50"
@@ -21,7 +18,6 @@ export default async function FormList() {
         </div>
       </Link>
 
-      {/* Отображение существующих форм */}
       {forms.map((form) => (
         <FormCard key={form.id} form={form} />
       ))}

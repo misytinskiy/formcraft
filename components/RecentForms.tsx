@@ -43,7 +43,6 @@ export default function RecentForms() {
       </div>
 
       <Suspense fallback={<FormListSkeleton />}>
-        {" "}
         <FormList />
       </Suspense>
     </section>

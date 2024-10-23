@@ -62,7 +62,6 @@ function MainForm({
           {publicForm ? (
             <div className="space-y-2 w-full flex flex-col">
               <div className="flex items-center justify-between">
-                {/* Используем клиентский компонент SubmitButton */}
                 <SubmitButton />
                 <Button
                   type="reset"

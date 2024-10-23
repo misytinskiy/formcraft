@@ -8,75 +8,75 @@ datasource db {
 }
 
 model User {
-  id        String   @id @default(uuid())
-  email     String   @unique
+  id        String     @id @default(uuid())
+  email     String     @unique
   name      String?
-  role      Role     @default(USER)
-  status    Status   @default(ACTIVE)
-  forms     Form[]   @relation("UserForms")
+  role      Role       @default(USER)
+  status    Status     @default(ACTIVE)
+  createdAt DateTime   @default(now())
+  updatedAt DateTime   @updatedAt
   comments  Comment[]
+  forms     Form[]     @relation("UserForms")
   likes     Like[]
   responses Response[]
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
 }
 
 model Form {
-  id          String      @id @default(uuid())
+  id          String     @id @default(uuid())
   title       String
   description String?
   topic       String
   imageUrl    String?
-  isPublic    Boolean     @default(true)
-  author      User        @relation("UserForms", fields: [authorId], references: [id])
+  isPublic    Boolean    @default(true)
   authorId    String
+  createdAt   DateTime   @default(now())
+  updatedAt   DateTime   @updatedAt
+  comments    Comment[]
+  author      User       @relation("UserForms", fields: [authorId], references: [id])
+  likes       Like[]
   questions   Question[]
   responses   Response[]
-  comments    Comment[]
-  likes       Like[]
-  tags        Tag[]       @relation("FormTags") // Убрали references: [id] здесь
-  createdAt   DateTime    @default(now())
-  updatedAt   DateTime    @updatedAt
+  tags        Tag[]      @relation("FormTags")
 }
 
 model Question {
   id          String       @id @default(uuid())
-  form        Form         @relation(fields: [formId], references: [id])
   formId      String
   title       String
   description String?
   type        QuestionType
   isRequired  Boolean      @default(false)
   order       Int
-  options     String[]     // Используется для типов с вариантами ответов
+  options     String[]
+  form        Form         @relation(fields: [formId], references: [id])
 }
 
 model Response {
   id        String   @id @default(uuid())
-  form      Form     @relation(fields: [formId], references: [id])
   formId    String
-  user      User?    @relation(fields: [userId], references: [id])
   userId    String?
   answers   Json
   createdAt DateTime @default(now())
+  form      Form     @relation(fields: [formId], references: [id])
+  user      User?    @relation(fields: [userId], references: [id])
 }
 
 model Comment {
   id        String   @id @default(uuid())
   content   String
-  form      Form     @relation(fields: [formId], references: [id])
   formId    String
-  author    User     @relation(fields: [authorId], references: [id])
   authorId  String
   createdAt DateTime @default(now())
+  author    User     @relation(fields: [authorId], references: [id])
+  form      Form     @relation(fields: [formId], references: [id])
 }
 
 model Like {
   id     String @id @default(uuid())
-  form   Form   @relation(fields: [formId], references: [id])
   formId String
-  user   User   @relation(fields: [userId], references: [id])
   userId String
+  form   Form   @relation(fields: [formId], references: [id])
+  user   User   @relation(fields: [userId], references: [id])
 
   @@unique([formId, userId])
 }
@@ -84,7 +84,7 @@ model Like {
 model Tag {
   id    String @id @default(uuid())
   name  String @unique
-  forms Form[] @relation("FormTags") // Убрали references: [id] здесь
+  forms Form[] @relation("FormTags")
 }
 
 enum Role {

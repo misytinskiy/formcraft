@@ -1,5 +1,3 @@
-// app/dashboard/forms/new/page.tsx
-
 import CreateForm from "@/components/CreateForm";
 
 export default function NewFormPage() {

@@ -14,9 +14,6 @@ export default function CTAButtons({ className }: { className?: string }) {
       <Button asChild>
         <Link href={"/dashboard"}>Get started</Link>
       </Button>
-      <Button asChild variant={"outline"}>
-        <Link href={"/learn-more"}>Learn more</Link>
-      </Button>
     </div>
   );
 }
