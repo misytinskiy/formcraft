@@ -45,18 +45,19 @@ export async function fetchFormById(
   id: string
 ): Promise<FormWithRelations | null> {
   try {
+    // Запрашиваем форму, реляционные данные автора и вопросы
     const { data: form, error } = await supabase
       .from("Form")
       .select(
         `
         id, title, description, topic, imageUrl, isPublic, createdAt, updatedAt,
-        author:authorId (id, name, email),
+        author:authorId (id, name, email, role, status, createdAt, updatedAt),
         Question(id, title, description, type, isRequired, order, options, formId),
         Response(id, answers, createdAt, formId)
       `
       )
       .eq("id", id)
-      .single();
+      .single(); // Гарантируем, что запрос вернет только одну форму
 
     if (error) {
       throw new Error("Failed to fetch form: " + error.message);
@@ -66,12 +67,17 @@ export async function fetchFormById(
       return null;
     }
 
+    // Если автор является массивом, извлекаем первый элемент
+    const author =
+      form.author && Array.isArray(form.author) ? form.author[0] : form.author;
+
+    // Преобразуем данные формы в ожидаемый формат
     const transformedForm: FormWithRelations = {
       ...form,
-      authorId: form.author?.id || "",
-      author: form.author || null,
-      questions: form.Question || [],
-      responses: form.Response || [],
+      authorId: author?.id || "", // Получаем id автора
+      author: author || null, // Присваиваем объект автора
+      questions: form.Question || [], // Присваиваем вопросы формы
+      responses: form.Response || [], // Присваиваем ответы формы
     };
 
     return transformedForm;

@@ -9,13 +9,11 @@ export default function FormsPage() {
       <Header />
       <main className="max-w-6xl mx-auto space-y-8 pt-20">
         <section>
-          <h2 className="text-xl font-semibold mb-2">Созданные формы</h2>
+          <h2 className="text-xl font-semibold mb-2">Created forms</h2>
           <UserCreatedForms />
         </section>
         <section>
-          <h2 className="text-xl font-semibold mb-2">
-            Формы, которые вы заполнили
-          </h2>
+          <h2 className="text-xl font-semibold mb-2">Forms you filled out</h2>
           <FilledForms />
         </section>
       </main>
