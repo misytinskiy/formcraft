@@ -1,11 +1,14 @@
 "use client";
 
-import { usePathname } from "next/navigation";
-import { FormWithRelations } from "@/types";
-import { Tabs, TabsList, TabsTrigger } from "./ui/tabs";
-import { cn } from "@/lib/utils";
 import Link from "next/link";
+
+import { Tabs, TabsList, TabsTrigger } from "./ui/tabs";
+
+import { usePathname } from "next/navigation";
 import { useUser } from "@clerk/nextjs";
+
+import { FormWithRelations } from "@/types";
+import { cn } from "@/lib/utils";
 
 const tabs = [
   { title: "Questions", href: "" },

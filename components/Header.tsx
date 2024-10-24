@@ -1,10 +1,13 @@
 import Image from "next/image";
 import Link from "next/link";
-import logo from "@/public/logo.png";
-import { UserButton } from "@clerk/nextjs";
-import Search from "./Search";
-import { Suspense } from "react";
+
 import { SearchSkeleton } from "./Skeletons";
+import Search from "./Search";
+
+import { UserButton } from "@clerk/nextjs";
+import { Suspense } from "react";
+
+import logo from "@/public/logo.png";
 
 export default function Header() {
   return (

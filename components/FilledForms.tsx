@@ -1,10 +1,13 @@
 "use client";
 
 import React, { useEffect, useState } from "react";
+
+import FormCard from "./FormCard";
+
 import { useUser } from "@clerk/nextjs";
+
 import { fetchFilledForms } from "@/lib/data";
 import { FormWithRelations } from "@/types";
-import FormCard from "./FormCard";
 
 export default function FilledForms() {
   const { user } = useUser();
@@ -29,7 +32,7 @@ export default function FilledForms() {
   }, [user]);
 
   if (loading) {
-    return <p>Загрузка...</p>;
+    return <p>Loading...</p>;
   }
 
   return (

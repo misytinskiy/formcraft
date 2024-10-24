@@ -9,10 +9,12 @@ import {
   CommandItem,
   CommandList,
 } from "@/components/ui/command";
-import { SearchIcon } from "lucide-react";
+
 import { useCommandDialogStore } from "@/store/store";
 import { FormWithRelations } from "@/types";
+
 import { useRouter } from "next/navigation";
+import { SearchIcon } from "lucide-react";
 
 export default function SearchInput({ forms }: { forms: FormWithRelations[] }) {
   const router = useRouter();

@@ -1,6 +1,8 @@
 import React from "react";
-import { FormInputIcon } from "lucide-react";
+
 import { Button } from "@/components/ui/button";
+
+import { FormInputIcon } from "lucide-react";
 import { SignedIn, SignedOut, SignInButton, UserButton } from "@clerk/nextjs";
 
 export default function LandingHeader() {

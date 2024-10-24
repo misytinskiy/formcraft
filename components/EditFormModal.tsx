@@ -19,12 +19,16 @@ import {
   SelectTrigger,
   SelectValue,
 } from "./ui/select";
-import { X } from "lucide-react";
-import { useState } from "react";
-import { FormWithRelations, Question, QuestionType } from "@/types";
+
 import { updateForm } from "@/lib/actions";
+
+import { X } from "lucide-react";
 import { v4 as uuidv4 } from "uuid";
+
+import { FormWithRelations, Question, QuestionType } from "@/types";
+
 import { useRouter } from "next/navigation";
+import { useState } from "react";
 
 const questionTypeLabels: { [key in QuestionType]: string } = {
   SINGLE_LINE_TEXT: "Single Line Text",

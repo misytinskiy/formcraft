@@ -1,7 +1,8 @@
-import { Loader } from "lucide-react";
-import { Skeleton } from "./ui/skeleton";
 import IconButton from "./IconButton";
+import { Skeleton } from "./ui/skeleton";
 import { Card, CardFooter, CardHeader, CardTitle } from "./ui/card";
+
+import { Loader } from "lucide-react";
 
 export function SearchSkeleton() {
   return (

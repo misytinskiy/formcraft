@@ -1,17 +1,20 @@
 "use client";
 
 import React, { useEffect, useState } from "react";
+
 import SearchInput from "./SearchInput";
 import SearchMobile from "./SearchMobile";
+
+import { FormWithRelations } from "@/types";
 import { fetchUserCreatedForms, fetchFilledForms } from "@/lib/data";
+
 import { uniqBy } from "lodash";
-import { useUser } from "@clerk/nextjs"; // Используем useUser для получения пользователя
-import { FormWithRelations } from "@/types"; // Импортируем тип
+import { useUser } from "@clerk/nextjs";
 
 export default function Search() {
-  const { user } = useUser(); // Получаем текущего пользователя
-  const [forms, setForms] = useState<FormWithRelations[]>([]); // Явно указываем тип состояния
-  const [loading, setLoading] = useState(true); // Состояние для индикатора загрузки
+  const { user } = useUser();
+  const [forms, setForms] = useState<FormWithRelations[]>([]);
+  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     const loadForms = async () => {
@@ -20,12 +23,11 @@ export default function Search() {
           const userCreatedForms = await fetchUserCreatedForms(user.id);
           const filledForms = await fetchFilledForms(user.id);
 
-          // Объединяем созданные и заполненные формы, убираем дубли
           const combinedForms = uniqBy(
             [...userCreatedForms, ...filledForms],
             "id"
           );
-          setForms(combinedForms); // Устанавливаем формы в состояние
+          setForms(combinedForms);
         } catch (error) {
           console.error("Ошибка при загрузке форм:", error);
         } finally {
@@ -38,7 +40,7 @@ export default function Search() {
   }, [user]);
 
   if (loading) {
-    return <p>Загрузка...</p>; // Пока формы загружаются
+    return <p>Loading...</p>;
   }
 
   return (

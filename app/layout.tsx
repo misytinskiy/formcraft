@@ -1,10 +1,10 @@
-import type { Metadata } from "next";
-import "./globals.css";
-import { Roboto } from "next/font/google";
+import { Toaster } from "@/components/ui/sonner";
 
+import type { Metadata } from "next";
+import { Roboto } from "next/font/google";
 import { ClerkProvider } from "@clerk/nextjs";
 
-import { Toaster } from "@/components/ui/sonner";
+import "./globals.css";
 
 const roboto = Roboto({
   weight: ["400", "500", "700"],

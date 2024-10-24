@@ -1,8 +1,10 @@
 "use client";
 
-import { usePathname } from "next/navigation";
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
+
 import { cn } from "@/lib/utils";
+
+import { usePathname } from "next/navigation";
 import Link from "next/link";
 
 const tabs = [

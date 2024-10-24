@@ -25,15 +25,11 @@ export default clerkMiddleware(async (auth, req) => {
           "Ошибка при выборке пользователя из Supabase:",
           selectError.message
         );
-        throw new Error(selectError.message); // Прерываем выполнение при критической ошибке
+        throw new Error(selectError.message);
       }
 
       if (!existingUser) {
-        // Получаем данные пользователя из Clerk
         const user = await clerkClient.users.getUser(userId);
-
-        // Логируем данные пользователя
-        console.log("User data from Clerk:", user);
 
         // Добавляем пользователя в таблицу User
         const { error: insertError } = await supabase.from("User").insert({

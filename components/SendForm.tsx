@@ -1,5 +1,8 @@
 "use client";
 
+import IconButton from "./IconButton";
+import LinkTabContent from "./LinkTabContent";
+import { Button } from "./ui/button";
 import {
   Dialog,
   DialogContent,
@@ -8,9 +11,6 @@ import {
   DialogTitle,
   DialogTrigger,
 } from "@/components/ui/dialog";
-import { Facebook, Link2, Send, Twitter } from "lucide-react";
-import IconButton from "./IconButton";
-import { Button } from "./ui/button";
 import {
   Select,
   SelectContent,
@@ -18,9 +18,9 @@ import {
   SelectTrigger,
   SelectValue,
 } from "./ui/select";
-
 import { Tabs, TabsTrigger, TabsList } from "@/components/ui/tabs";
-import LinkTabContent from "./LinkTabContent";
+
+import { Facebook, Link2, Send, Twitter } from "lucide-react";
 
 const tabs = [{ value: "link", icon: Link2 }] as const;
 

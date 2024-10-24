@@ -1,15 +1,20 @@
 import React, { Suspense } from "react";
+
 import { Button } from "./ui/button";
+import SendForm from "./SendForm";
+import IconButton from "./IconButton";
+import FormPageHeaderBottom from "./FormPageHeaderBottom";
+import { FormPageHeaderBottomSkeleton } from "./Skeletons";
+
 import Link from "next/link";
 import Image from "next/image";
-import logo from "@/public/logo.png";
-import { FormWithRelations } from "@/types";
-import IconButton from "./IconButton";
+
 import { Folder, Star } from "lucide-react";
 import { UserButton } from "@clerk/nextjs";
-import SendForm from "./SendForm";
-import { FormPageHeaderBottomSkeleton } from "./Skeletons";
-import FormPageHeaderBottom from "./FormPageHeaderBottom";
+
+import { FormWithRelations } from "@/types";
+
+import logo from "@/public/logo.png";
 
 function FormPageHeader({ form }: { form: FormWithRelations }) {
   return (
