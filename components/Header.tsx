@@ -12,7 +12,7 @@ export default function Header() {
       <div className="flex items-center space-x-2">
         <Link href={"/"} className="flex items-center space-x-1">
           <Image src={logo} alt="Logo" className="w-10 h-10" />
-          <p className="text-xl text-neutral-500">Forms</p>
+          <p className="text-xl text-neutral-500">FormCraft</p>
         </Link>
       </div>
 

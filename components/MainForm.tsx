@@ -30,7 +30,7 @@ function MainForm({
     <main
       className={cn(
         "max-w-3xl mx-auto pb-16 space-y-3.5",
-        !publicForm ? "pt-40 sm:pt-32" : "pt-8"
+        !publicForm ? "pt-40 sm:pt-32" : "pt-32"
       )}
     >
       <Card>
