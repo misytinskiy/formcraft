@@ -233,7 +233,19 @@ export async function updateForm(
 
 // Функция для удаления формы
 export async function deleteForm(formId: string): Promise<void> {
-  // Сначала удаляем связанные вопросы
+  // Сначала удаляем связанные ответы
+  const { error: responseError } = await supabase
+    .from("Response")
+    .delete()
+    .eq("formId", formId);
+
+  if (responseError) {
+    throw new Error(
+      "Не удалось удалить связанные ответы: " + responseError.message
+    );
+  }
+
+  // Затем удаляем связанные вопросы
   const { error: questionError } = await supabase
     .from("Question")
     .delete()
@@ -245,7 +257,7 @@ export async function deleteForm(formId: string): Promise<void> {
     );
   }
 
-  // Затем удаляем саму форму
+  // удаляем саму форму
   const { error: formError } = await supabase
     .from("Form")
     .delete()
