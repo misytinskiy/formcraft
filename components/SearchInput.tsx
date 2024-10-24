@@ -26,7 +26,7 @@ export default function SearchInput({ forms }: { forms: FormWithRelations[] }) {
       }
     };
     document.addEventListener("keydown", down);
-    return document.removeEventListener("keydown", down);
+    return () => document.removeEventListener("keydown", down); // Исправлено
   }, [open]);
 
   const runCommand = useCallback(
@@ -49,7 +49,7 @@ export default function SearchInput({ forms }: { forms: FormWithRelations[] }) {
         </div>
       </div>
       <CommandDialog open={isOpen} onOpenChange={close}>
-        <CommandInput placeholder="Search all the forms"></CommandInput>
+        <CommandInput placeholder="Search all the forms" />
         <CommandList>
           <CommandEmpty>No results found</CommandEmpty>
           <CommandGroup>

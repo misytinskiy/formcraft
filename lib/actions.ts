@@ -3,8 +3,8 @@
 import { supabase } from "@/lib/supabaseClient";
 import { redirect } from "next/navigation";
 import { auth } from "@clerk/nextjs/server";
-import { clerkClient } from "@clerk/nextjs/server";
 import { v4 as uuidv4 } from "uuid";
+import { Question, QuestionType } from "@/types";
 
 // Функция для отправки данных формы (ответов)
 export async function addFormData(formData: FormData): Promise<void> {
@@ -59,42 +59,23 @@ export async function createForm(formData: FormData): Promise<void> {
   const topic = formData.get("topic")?.toString() || "";
   const imageUrl = formData.get("imageUrl")?.toString() || "";
 
-  // Проверка, что поле title заполнено
   if (!title) {
     throw new Error("Поле 'title' обязательно для заполнения.");
   }
 
-  // Получение идентификатора пользователя
   const { userId } = auth();
   if (!userId) {
     throw new Error("Пользователь не авторизован.");
   }
 
-  // Получение данных пользователя из Clerk
-  const user = await clerkClient.users.getUser(userId);
+  console.log("User ID:", userId);
+  console.log("Form Title:", title, "Description:", description);
+  console.log("Topic:", topic, "Image URL:", imageUrl, "Is Public:", isPublic);
 
-  // Создание или обновление пользователя в базе данных Supabase
-  const { error: createUserError } = await supabase.from("User").upsert({
-    id: userId,
-    email: user.emailAddresses[0].emailAddress,
-    name: user.firstName
-      ? `${user.firstName} ${user.lastName}`
-      : user.username || user.emailAddresses[0].emailAddress,
-    createdAt: new Date().toISOString(),
-    updatedAt: new Date().toISOString(),
-  });
-
-  if (createUserError) {
-    throw new Error(
-      "Не удалось создать пользователя: " + createUserError.message
-    );
-  }
-
-  // Вставка данных формы в Supabase
   const { data: newForm, error: createFormError } = await supabase
     .from("Form")
     .insert({
-      id: uuidv4(), // Генерация уникального ID формы
+      id: uuidv4(),
       title,
       description,
       isPublic,
@@ -111,27 +92,85 @@ export async function createForm(formData: FormData): Promise<void> {
     throw new Error("Не удалось создать форму: " + createFormError.message);
   }
 
-  // Перенаправление пользователя на страницу с формой после создания
-  redirect(`/dashboard/forms/${newForm.id}`);
-}
-
-function buildQuestionsData(formData: FormData) {
   const questionIds = formData.getAll("questionIds[]");
-  return questionIds.map((qid, index) => {
+  console.log("Question IDs:", questionIds);
+
+  if (!questionIds.length) {
+    console.log("No questions were found in formData");
+    throw new Error("Нет вопросов для добавления в форму.");
+  }
+
+  const questions = questionIds.map((qid, index) => {
     const id = uuidv4();
     const title = formData.get(`questionTitle_${qid}`)?.toString() || "";
-    const type = formData.get(`questionType_${qid}`)?.toString() as
-      | "SINGLE_LINE_TEXT"
-      | "MULTI_LINE_TEXT"
-      | "POSITIVE_INTEGER"
-      | "CHECKBOX"
-      | "RADIO_BUTTON";
+    const type = formData.get(`questionType_${qid}`)?.toString() || "TEXT";
     const isRequired = formData.get(`questionRequired_${qid}`) === "on";
     const options = formData
       .getAll(`questionOptions_${qid}[]`)
       .map((option) => option.toString());
-    return { id, title, type, isRequired, options, order: index + 1 };
+
+    console.log(
+      "Question Title:",
+      title,
+      "Type:",
+      type,
+      "Is Required:",
+      isRequired
+    );
+    console.log("Options for question:", options);
+
+    return {
+      id,
+      formId: newForm.id,
+      title,
+      type,
+      isRequired,
+      options,
+      order: index + 1,
+    };
   });
+
+  // Убедитесь, что вопросы уникальны
+  const uniqueQuestions = Array.from(
+    new Map(questions.map((q) => [q.title, q])).values()
+  );
+  console.log("Unique Questions to insert:", uniqueQuestions);
+
+  const { error: insertQuestionsError } = await supabase
+    .from("Question")
+    .insert(uniqueQuestions);
+
+  if (insertQuestionsError) {
+    throw new Error(
+      "Не удалось добавить вопросы: " + insertQuestionsError.message
+    );
+  }
+
+  redirect(`/dashboard/forms/${newForm.id}`);
+}
+
+function buildQuestionsData(formData: FormData, formId: string): Question[] {
+  const questionIds = formData.getAll("questionIds[]");
+  const questions: Question[] = questionIds.map((qid, index) => {
+    const title = formData.get(`questions[${index}][title]`)?.toString() || "";
+    const type = formData.get(`questions[${index}][type]`)?.toString() || "";
+    const isRequired = formData.get(`questions[${index}][isRequired]`) === "on";
+    const options = formData
+      .getAll(`questions[${index}][options][]`)
+      .map((opt) => opt.toString());
+
+    return {
+      id: qid.toString() || uuidv4(),
+      formId, // Добавляем formId в каждый вопрос
+      title,
+      type: type as QuestionType, // Приводим к типу QuestionType
+      isRequired,
+      options,
+      order: index + 1,
+    };
+  });
+
+  return questions;
 }
 
 // Функция для обновления существующей формы
@@ -145,21 +184,13 @@ export async function updateForm(
   const topic = formData.get("topic")?.toString() || "";
   const imageUrl = formData.get("imageUrl")?.toString() || "";
 
-  // Преобразуем теги в массив строк
-  const tagsString = formData.get("tags")?.toString() || "";
-  const tags = tagsString
-    .split(",")
-    .map((tag) => tag.trim())
-    .filter((tag) => tag.length > 0);
+  // Получаем вопросы
+  const questions = buildQuestionsData(formData, formId);
 
-  // Проверка, что поле title заполнено
   if (!title) {
-    throw new Error("Поле 'title' обязательно для заполнения.");
+    throw new Error("Title is required.");
   }
 
-  const questions = buildQuestionsData(formData); // Используем questions для обновления вопросов
-
-  // Обновление формы в Supabase
   const { error: updateFormError } = await supabase
     .from("Form")
     .update({
@@ -173,16 +204,17 @@ export async function updateForm(
     .eq("id", formId);
 
   if (updateFormError) {
-    throw new Error("Не удалось обновить форму: " + updateFormError.message);
+    console.error("Form update error:", updateFormError.message); // Логируем ошибку
+    throw new Error("Failed to update form: " + updateFormError.message);
   }
 
-  // Обновление или вставка вопросов
+  // Обновляем или вставляем вопросы
   for (const questionData of questions) {
     const { error: updateQuestionError } = await supabase
       .from("Question")
       .upsert({
-        id: uuidv4(),
-        formId,
+        id: questionData.id || uuidv4(),
+        formId: questionData.formId,
         title: questionData.title,
         type: questionData.type,
         isRequired: questionData.isRequired,
@@ -191,37 +223,36 @@ export async function updateForm(
       });
 
     if (updateQuestionError) {
+      console.error("Question upsert error:", updateQuestionError.message);
       throw new Error(
-        "Не удалось обновить вопросы: " + updateQuestionError.message
+        "Failed to update questions: " + updateQuestionError.message
       );
     }
   }
-
-  // Добавление или обновление тегов для формы
-  if (tags.length > 0) {
-    // Здесь предполагается, что есть отдельная таблица для тегов или связь между тегами и формами
-    const { error: updateTagsError } = await supabase.from("FormTags").upsert(
-      tags.map((tag) => ({
-        formId,
-        tagName: tag,
-      }))
-    );
-
-    if (updateTagsError) {
-      throw new Error("Не удалось обновить теги: " + updateTagsError.message);
-    }
-  }
-
-  // Перенаправление после успешного обновления
-  redirect(`/dashboard/forms/${formId}`);
 }
 
 // Функция для удаления формы
 export async function deleteForm(formId: string): Promise<void> {
-  const { error } = await supabase.from("Form").delete().eq("id", formId);
+  // Сначала удаляем связанные вопросы
+  const { error: questionError } = await supabase
+    .from("Question")
+    .delete()
+    .eq("formId", formId);
 
-  if (error) {
-    throw new Error("Не удалось удалить форму: " + error.message);
+  if (questionError) {
+    throw new Error(
+      "Не удалось удалить связанные вопросы: " + questionError.message
+    );
+  }
+
+  // Затем удаляем саму форму
+  const { error: formError } = await supabase
+    .from("Form")
+    .delete()
+    .eq("id", formId);
+
+  if (formError) {
+    throw new Error("Не удалось удалить форму: " + formError.message);
   }
 
   redirect(`/dashboard`);

@@ -176,7 +176,7 @@ function renderQuestionInput(
       return (
         <div>
           {question.options.map((option) => (
-            <div key={option} className="flex items-center space-x-2">
+            <div key={option} className="flex items-center space-x-2 mb-2">
               <Checkbox
                 id={`${question.id}_${option}`}
                 name={question.id}
