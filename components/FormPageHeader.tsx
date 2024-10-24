@@ -5,7 +5,7 @@ import Image from "next/image";
 import logo from "@/public/logo.png";
 import { FormWithRelations } from "@/types";
 import IconButton from "./IconButton";
-import { Folder, MoreVertical, Star } from "lucide-react";
+import { Folder, Star } from "lucide-react";
 import { UserButton } from "@clerk/nextjs";
 import SendForm from "./SendForm";
 import { FormPageHeaderBottomSkeleton } from "./Skeletons";
@@ -29,7 +29,6 @@ function FormPageHeader({ form }: { form: FormWithRelations }) {
         </div>
         <div className="flex items-center sm:gap-x-4 ">
           <SendForm />
-          <IconButton Icon={MoreVertical} className="mr-2 sm:mr-0" />
           <UserButton />
         </div>
       </div>

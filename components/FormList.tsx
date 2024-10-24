@@ -1,26 +1,13 @@
-import { fetchAllForms } from "@/lib/data";
-import FormCard from "./FormCard";
+import { FormWithRelations } from "@/types";
 import Link from "next/link";
-import { Plus } from "lucide-react";
 
-export default async function FormList() {
-  const forms = await fetchAllForms();
-
+export default function FormList({ form }: { form: FormWithRelations }) {
   return (
-    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-      <Link
-        href="/dashboard/forms/new"
-        className="border-dashed border-2 border-gray-300 flex items-center justify-center p-4 rounded-md hover:border-blue-500 hover:bg-blue-50"
-      >
-        <div className="text-center">
-          <Plus className="w-10 h-10 mx-auto text-gray-500" />
-          <p className="mt-2 text-gray-500">Create form</p>
-        </div>
+    <div className="border border-gray-300 p-4 rounded-md hover:border-blue-500 hover:bg-blue-50">
+      <Link href={`/dashboard/forms/${form.id}`}>
+        <h3 className="font-medium text-lg">{form.title}</h3>
+        <p className="text-gray-500">Author: {form.author.name}</p>
       </Link>
-
-      {forms.map((form) => (
-        <FormCard key={form.id} form={form} />
-      ))}
     </div>
   );
 }

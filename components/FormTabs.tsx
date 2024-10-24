@@ -5,6 +5,7 @@ import { FormWithRelations } from "@/types";
 import { Tabs, TabsList, TabsTrigger } from "./ui/tabs";
 import { cn } from "@/lib/utils";
 import Link from "next/link";
+import { useUser } from "@clerk/nextjs";
 
 const tabs = [
   { title: "Questions", href: "" },
@@ -19,11 +20,16 @@ function FormTabs({
   responses: number;
 }) {
   const pathname = usePathname();
+  const { user } = useUser();
+
+  const isFormOwner = user?.id === form.authorId;
 
   return (
     <Tabs defaultValue="questions">
       <TabsList className="w-full bg-transparent gap-x-4 !p-0 h-full">
         {tabs.map((tab) => {
+          if (tab.href === "responses" && !isFormOwner) return null;
+
           const formIdPage = `/dashboard/forms/${form.id}`;
           const isActive =
             tab.href === ""

@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useCallback, useEffect } from "react";
+import React, { useCallback, useEffect, useState } from "react";
 import {
   CommandDialog,
   CommandEmpty,
@@ -17,6 +17,8 @@ import { useRouter } from "next/navigation";
 export default function SearchInput({ forms }: { forms: FormWithRelations[] }) {
   const router = useRouter();
   const { close, open, isOpen } = useCommandDialogStore();
+  const [query, setQuery] = useState("");
+  const [filteredForms, setFilteredForms] = useState(forms);
 
   useEffect(() => {
     const down = (e: KeyboardEvent) => {
@@ -26,7 +28,7 @@ export default function SearchInput({ forms }: { forms: FormWithRelations[] }) {
       }
     };
     document.addEventListener("keydown", down);
-    return () => document.removeEventListener("keydown", down); // Исправлено
+    return () => document.removeEventListener("keydown", down);
   }, [open]);
 
   const runCommand = useCallback(
@@ -36,6 +38,13 @@ export default function SearchInput({ forms }: { forms: FormWithRelations[] }) {
     },
     [close]
   );
+
+  useEffect(() => {
+    const filtered = forms.filter((form) =>
+      form.title.toLowerCase().includes(query.trim().toLowerCase())
+    );
+    setFilteredForms(filtered);
+  }, [query, forms]);
 
   return (
     <>
@@ -49,21 +58,29 @@ export default function SearchInput({ forms }: { forms: FormWithRelations[] }) {
         </div>
       </div>
       <CommandDialog open={isOpen} onOpenChange={close}>
-        <CommandInput placeholder="Search all the forms" />
+        <CommandInput
+          placeholder="Search all the forms"
+          value={query}
+          onValueChange={setQuery}
+        />
         <CommandList>
           <CommandEmpty>No results found</CommandEmpty>
           <CommandGroup>
-            {forms.map((form) => (
-              <CommandItem
-                key={form.id}
-                value={form.id}
-                onSelect={() =>
-                  runCommand(() => router.push(`/dashboard/forms/${form.id}`))
-                }
-              >
-                {form.title}
-              </CommandItem>
-            ))}
+            {filteredForms.length > 0 ? (
+              filteredForms.map((form) => (
+                <CommandItem
+                  key={form.id}
+                  value={form.id}
+                  onSelect={() =>
+                    runCommand(() => router.push(`/dashboard/forms/${form.id}`))
+                  }
+                >
+                  {form.title}
+                </CommandItem>
+              ))
+            ) : (
+              <CommandEmpty>No forms match your query</CommandEmpty>
+            )}
           </CommandGroup>
         </CommandList>
       </CommandDialog>

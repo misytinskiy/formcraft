@@ -78,8 +78,7 @@ function MainForm({
                 className="text-purple-600 hover:text-purple-800"
                 href={`/dashboard/forms/${form.id}/edit`}
               >
-                Чтобы внести изменения в эту форму, перейдите на панель
-                управления.
+                To make changes to this form, go to the control panel.
               </Link>
             </div>
           )}
@@ -102,9 +101,6 @@ function MainForm({
           <CardFooter className="flex justify-between">
             <Button asChild variant="outline">
               <Link href={`/dashboard`}>Go back</Link>
-            </Button>
-            <Button variant={"brand"} asChild>
-              <Link href={`/dashboard/forms/${form.id}/edit`}>Edit form</Link>
             </Button>
           </CardFooter>
         </Card>

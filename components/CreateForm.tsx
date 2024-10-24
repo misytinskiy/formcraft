@@ -61,7 +61,7 @@ export default function CreateForm() {
 
   const addQuestion = () => {
     const newQuestion = {
-      id: uuidv4(), // Убедитесь, что каждый вопрос имеет уникальный ID
+      id: uuidv4(),
       title: "",
       type: "SINGLE_LINE_TEXT" as QuestionType,
       isRequired: false,
@@ -71,7 +71,7 @@ export default function CreateForm() {
     // Проверка на существование вопроса с таким же ID
     if (form.questions.find((q) => q.id === newQuestion.id)) {
       console.warn("Question with the same ID already exists.");
-      return; // Не добавляем, если такой вопрос уже есть
+      return;
     }
 
     setForm((prevForm) => ({
@@ -91,25 +91,15 @@ export default function CreateForm() {
     e.preventDefault();
     const formData = new FormData(e.currentTarget);
 
-    // Логирование переданных данных для отладки
-    console.log(
-      "Form Data before submitting:",
-      Object.fromEntries(formData.entries())
-    );
-
-    // Добавляем теги в formData
     formData.delete("tags[]");
     form.tags.forEach((tag) => formData.append("tags[]", tag));
 
-    // Добавляем идентификаторы вопросов в formData
     form.questions.forEach((question) => {
       formData.append("questionIds[]", question.id);
     });
 
-    // Логирование добавленных вопросов для отладки
     console.log("Questions added to FormData:", form.questions);
 
-    // Вызываем серверное действие для создания формы через Supabase
     await createForm(formData);
     router.push("/dashboard");
   };
@@ -368,7 +358,6 @@ export default function CreateForm() {
         </div>
       ))}
 
-      {/* Глобальные кнопки "Добавить вопрос" и "Создать форму" */}
       <div className="flex justify-between items-center">
         <div className="flex space-x-2">
           <Button type="button" onClick={addQuestion}>

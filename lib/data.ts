@@ -149,3 +149,90 @@ export async function fetchFormResponsesCount(formId: string): Promise<number> {
     throw new Error("Не удалось получить количество ответов.");
   }
 }
+
+// Функция для получения форм, которые заполнил пользователь
+export async function fetchFilledForms(
+  userId: string
+): Promise<FormWithRelations[]> {
+  try {
+    // Сначала получаем все формы, на которые есть ответы пользователя
+    const { data: responses, error: responseError } = await supabase
+      .from("Response")
+      .select("formId")
+      .eq("userId", userId); // Фильтруем ответы по пользователю
+
+    if (responseError) {
+      throw new Error(
+        "Ошибка при получении заполненных форм: " + responseError.message
+      );
+    }
+
+    if (!responses || responses.length === 0) return [];
+
+    const formIds = responses.map((response) => response.formId);
+
+    // Затем находим формы по их ID
+    const { data: forms, error: formError } = await supabase
+      .from("Form")
+      .select(
+        `
+        id, title, description, topic, imageUrl, isPublic, createdAt, updatedAt,
+        author:authorId (id, name, email),
+        Question (id, title, description, type, isRequired, order, options)
+      `
+      )
+      .in("id", formIds); // Используем IDs заполненных форм
+
+    if (formError) {
+      throw new Error(
+        "Ошибка при получении заполненных форм: " + formError.message
+      );
+    }
+
+    if (!forms) return [];
+
+    return forms.map((form: any) => ({
+      ...form,
+      authorId: form.author?.id || "",
+      author: form.author || null,
+      questions: form.Question || [],
+    }));
+  } catch (error) {
+    console.error("Database Error:", error);
+    throw new Error("Не удалось получить заполненные формы.");
+  }
+}
+
+// Функция для получения форм, созданных пользователем
+export async function fetchUserCreatedForms(
+  userId: string
+): Promise<FormWithRelations[]> {
+  try {
+    const { data: forms, error } = await supabase
+      .from("Form")
+      .select(
+        `
+        id, title, description, topic, imageUrl, isPublic, createdAt, updatedAt,
+        author:authorId (id, name, email),
+        Question (id, title, description, type, isRequired, order, options)
+      `
+      )
+      .eq("authorId", userId); // Фильтруем по автору
+
+    if (error) {
+      throw new Error("Ошибка при получении созданных форм: " + error.message);
+    }
+
+    if (!forms) return [];
+
+    return forms.map((form: any) => ({
+      ...form,
+      authorId: form.author?.id || "",
+      author: form.author || null,
+      questions: form.Question || [],
+    }));
+  } catch (error) {
+    console.error("Database Error:", error);
+    throw new Error("Не удалось получить созданные формы.");
+  }
+}

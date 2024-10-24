@@ -1,5 +1,3 @@
-// components/MenuItems.tsx
-
 import React from "react";
 import { Button } from "./ui/button";
 import Image, { StaticImageData } from "next/image";

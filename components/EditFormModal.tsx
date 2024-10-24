@@ -177,7 +177,6 @@ function EditFormModal({
                 <X className="w-5 h-5" />
               </button>
               <Label className="text-sm font-semibold">Question Title</Label>{" "}
-              {/* Добавлен заголовок Question Title */}
               <Input
                 name="title"
                 value={question.title}

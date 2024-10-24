@@ -3,7 +3,7 @@ import ResponsesTabs from "./ResponsesTabs";
 import { fetchFormResponsesCount } from "@/lib/data";
 
 async function ResponsesHeader({ id }: { id: string }) {
-  const responsesCount = await fetchFormResponsesCount(id); // Заменяем вызов Prisma на Supabase
+  const responsesCount = await fetchFormResponsesCount(id);
 
   return (
     <Card>

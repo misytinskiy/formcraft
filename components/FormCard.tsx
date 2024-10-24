@@ -13,13 +13,19 @@ import { X, Edit3 } from "lucide-react";
 import Link from "next/link";
 import { FormWithRelations } from "@/types";
 import ConfirmationDialog from "./ConfirmationDialog";
-import EditFormModal from "./EditFormModal"; // Импорт модального окна для редактирования
+import EditFormModal from "./EditFormModal";
 import { deleteForm } from "@/lib/actions";
 import { useUser } from "@clerk/nextjs";
 
-function FormCard({ form }: { form: FormWithRelations }) {
+function FormCard({
+  form,
+  hideActions = false,
+}: {
+  form: FormWithRelations;
+  hideActions?: boolean;
+}) {
   const [isDialogOpen, setIsDialogOpen] = useState(false);
-  const [isEditModalOpen, setIsEditModalOpen] = useState(false); // Состояние для окна редактирования
+  const [isEditModalOpen, setIsEditModalOpen] = useState(false);
   const { user } = useUser();
 
   const isFormOwner = user?.id === form.authorId;
@@ -41,12 +47,14 @@ function FormCard({ form }: { form: FormWithRelations }) {
     setIsEditModalOpen(true);
   };
 
+  console.log("Rendering FormCard with data:", form);
+
   return (
     <Card className="relative">
       <CardHeader>
         <CardTitle>{form.title}</CardTitle>
-        <CardDescription>Author: {form.author.name}</CardDescription>
-        {isFormOwner && (
+        <CardDescription>Автор: {form.author.name}</CardDescription>
+        {!hideActions && isFormOwner && (
           <div className="absolute top-2 right-2 flex space-x-2">
             <button
               onClick={handleDeleteClick}
@@ -55,7 +63,7 @@ function FormCard({ form }: { form: FormWithRelations }) {
               <X className="w-5 h-5" />
             </button>
             <button
-              onClick={handleEditClick} // Добавляем обработчик нажатия для открытия модального окна
+              onClick={handleEditClick}
               className="text-neutral-500 hover:text-neutral-700"
             >
               <Edit3 className="w-5 h-5" />
@@ -69,7 +77,6 @@ function FormCard({ form }: { form: FormWithRelations }) {
         </Button>
       </CardContent>
 
-      {/* Диалог подтверждения удаления */}
       {isDialogOpen && (
         <ConfirmationDialog
           isOpen={isDialogOpen}
@@ -78,12 +85,8 @@ function FormCard({ form }: { form: FormWithRelations }) {
         />
       )}
 
-      {/* Модальное окно редактирования формы */}
       {isEditModalOpen && (
-        <EditFormModal
-          form={form}
-          onClose={() => setIsEditModalOpen(false)} // Закрыть окно после редактирования
-        />
+        <EditFormModal form={form} onClose={() => setIsEditModalOpen(false)} />
       )}
     </Card>
   );
