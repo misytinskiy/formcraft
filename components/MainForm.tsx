@@ -68,7 +68,7 @@ function MainForm({
                   variant={"ghost"}
                   className="hover:bg-violet-200/50 text-purple-800 hover:text-purple-800"
                 >
-                  Очистить форму
+                  Clear form
                 </Button>
               </div>
             </div>
@@ -87,26 +87,24 @@ function MainForm({
       ) : (
         <Card>
           <CardHeader>
-            <CardTitle>Пустая форма</CardTitle>
+            <CardTitle>Empty form</CardTitle>
             <CardDescription>
-              В этой форме нет вопросов. Пожалуйста, добавьте вопросы в эту
-              форму.
+              There are no questions on this form. Please add questions to this
+              form.
             </CardDescription>
           </CardHeader>
           <CardContent className="flex flex-col items-center justify-center space-y-2">
             <FormInputIcon className="w-12 h-12 text-gray-500" />
             <p className="text-center text-gray-500">
-              В этой форме нет доступных вопросов.
+              There are no questions available on this form.
             </p>
           </CardContent>
           <CardFooter className="flex justify-between">
             <Button asChild variant="outline">
-              <Link href={`/dashboard`}>Вернуться назад</Link>
+              <Link href={`/dashboard`}>Go back</Link>
             </Button>
             <Button variant={"brand"} asChild>
-              <Link href={`/dashboard/forms/${form.id}/edit`}>
-                Редактировать форму
-              </Link>
+              <Link href={`/dashboard/forms/${form.id}/edit`}>Edit form</Link>
             </Button>
           </CardFooter>
         </Card>

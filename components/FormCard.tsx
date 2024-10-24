@@ -38,7 +38,7 @@ function FormCard({ form }: { form: FormWithRelations }) {
   };
 
   const handleEditClick = () => {
-    setIsEditModalOpen(true); // Открыть окно редактирования
+    setIsEditModalOpen(true);
   };
 
   return (

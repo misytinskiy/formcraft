@@ -51,7 +51,6 @@ function EditFormModal({
   });
   const router = useRouter();
 
-  // Обработка изменений в полях формы
   const handleChange = (
     e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>
   ) => {
@@ -59,7 +58,6 @@ function EditFormModal({
     setFormData((prevData) => ({ ...prevData, [name]: value }));
   };
 
-  // Обработка изменений в вопросах
   const handleQuestionChange = (
     index: number,
     e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>
@@ -72,7 +70,6 @@ function EditFormModal({
     });
   };
 
-  // Изменение типа вопроса
   const handleQuestionTypeChange = (index: number, value: QuestionType) => {
     setFormData((prevData) => {
       const updatedQuestions = [...prevData.questions];
@@ -81,7 +78,6 @@ function EditFormModal({
     });
   };
 
-  // Изменение обязательности вопроса
   const handleQuestionRequiredChange = (index: number, checked: boolean) => {
     setFormData((prevData) => {
       const updatedQuestions = [...prevData.questions];
@@ -90,35 +86,31 @@ function EditFormModal({
     });
   };
 
-  // Добавление нового вопроса
   const addQuestion = () => {
     const newQuestion: Question = {
-      id: uuidv4(), // Генерируем уникальный ID
-      formId: form.id, // Подставляем formId, если он есть
+      id: uuidv4(),
+      formId: form.id,
       title: "",
       type: "SINGLE_LINE_TEXT" as QuestionType,
       isRequired: false,
-      options: [], // Если тип вопроса позволяет опции, они должны быть массивом
-      order: formData.questions.length + 1, // Поле order для сортировки вопросов
+      options: [],
+      order: formData.questions.length + 1,
     };
 
-    // Обновляем состояние формы, добавляя новый вопрос
     setFormData((prevData) => ({
       ...prevData,
-      questions: [...prevData.questions, newQuestion], // Добавляем новый вопрос в массив вопросов
+      questions: [...prevData.questions, newQuestion],
     }));
   };
 
-  // Удаление вопроса
   const removeQuestion = (index: number) => {
     setFormData((prevData) => {
       const updatedQuestions = [...prevData.questions];
-      updatedQuestions.splice(index, 1); // Удаляем вопрос по индексу
+      updatedQuestions.splice(index, 1);
       return { ...prevData, questions: updatedQuestions };
     });
   };
 
-  // Обработка отправки формы
   const handleSubmit = async () => {
     try {
       const formDataToSend = new FormData();
@@ -130,7 +122,7 @@ function EditFormModal({
       formDataToSend.append("imageUrl", formData.imageUrl || "");
 
       formData.questions.forEach((question, index) => {
-        formDataToSend.append(`questionIds[]`, question.id); // ID вопросов
+        formDataToSend.append(`questionIds[]`, question.id);
         formDataToSend.append(`questions[${index}][title]`, question.title);
         formDataToSend.append(`questions[${index}][type]`, question.type);
         formDataToSend.append(
@@ -156,7 +148,7 @@ function EditFormModal({
         <DialogHeader>
           <DialogTitle className="text-xl font-bold">Edit Form</DialogTitle>
         </DialogHeader>
-        <div className="space-y-6">
+        <div className="space-y-8">
           <Input
             name="title"
             value={formData.title}
@@ -172,21 +164,20 @@ function EditFormModal({
             className="w-full p-2 border rounded"
           />
 
-          {/* Редактирование вопросов */}
           {formData.questions.map((question, index) => (
             <div
               key={index}
-              className="space-y-2 border-t border-gray-300 pt-4 relative p-4 shadow-lg rounded-lg"
+              className="space-y-4 border-t border-gray-300 pt-4 relative p-6 shadow-md rounded-lg border"
             >
-              {/* Кнопка удаления вопроса */}
               <button
                 type="button"
                 onClick={() => removeQuestion(index)}
-                className="absolute top-2 right-2 text-red-500 hover:text-red-700"
+                className="absolute top-2 right-2 text-gray-700 hover:text-gray-900"
               >
                 <X className="w-5 h-5" />
               </button>
-
+              <Label className="text-sm font-semibold">Question Title</Label>{" "}
+              {/* Добавлен заголовок Question Title */}
               <Input
                 name="title"
                 value={question.title}
@@ -194,8 +185,9 @@ function EditFormModal({
                 placeholder={`Question ${index + 1}`}
                 className="w-full p-2 border rounded"
               />
-
-              <Label className="text-sm font-semibold">Question Type</Label>
+              <div className="mt-4">
+                <Label className="text-sm font-semibold">Question Type</Label>
+              </div>
               <Select
                 value={question.type}
                 onValueChange={(value) =>
@@ -215,8 +207,7 @@ function EditFormModal({
                   ))}
                 </SelectContent>
               </Select>
-
-              <div className="flex items-center space-x-2">
+              <div className="flex items-center space-x-4">
                 <Switch
                   checked={question.isRequired}
                   onCheckedChange={(checked) =>
@@ -225,13 +216,13 @@ function EditFormModal({
                 />
                 <Label className="text-sm font-semibold">Required</Label>
               </div>
-
-              {/* Опции для вопросов типа RADIO_BUTTON и CHECKBOX */}
               {["RADIO_BUTTON", "CHECKBOX"].includes(question.type) && (
                 <div className="space-y-4">
-                  <Label className="text-sm font-semibold">Options</Label>
+                  {question.options.length > 0 && (
+                    <Label className="text-sm font-semibold">Options</Label>
+                  )}
                   {question.options.map((option, optIndex) => (
-                    <div key={optIndex} className="flex items-center space-x-2">
+                    <div key={optIndex} className="flex items-center space-x-4">
                       <Input
                         value={option}
                         onChange={(e) =>
@@ -239,7 +230,10 @@ function EditFormModal({
                             const updatedQuestions = [...prevData.questions];
                             updatedQuestions[index].options[optIndex] =
                               e.target.value;
-                            return { ...prevData, questions: updatedQuestions };
+                            return {
+                              ...prevData,
+                              questions: updatedQuestions,
+                            };
                           })
                         }
                         className="w-full p-2 border rounded"
@@ -252,10 +246,13 @@ function EditFormModal({
                             updatedQuestions[index].options = updatedQuestions[
                               index
                             ].options.filter((_, i) => i !== optIndex);
-                            return { ...prevData, questions: updatedQuestions };
+                            return {
+                              ...prevData,
+                              questions: updatedQuestions,
+                            };
                           })
                         }
-                        className="text-red-500 hover:text-red-700"
+                        className="text-gray-500 hover:text-gray-700"
                       >
                         <X className="w-5 h-5" />
                       </button>
@@ -264,22 +261,12 @@ function EditFormModal({
                   <Button
                     type="button"
                     onClick={() => {
-                      // Отладочное сообщение, чтобы убедиться, что код вызывается только один раз
-                      console.log("Add Option button clicked");
-
                       setFormData((prevData) => {
-                        // Копируем текущие вопросы
                         const updatedQuestions = [...prevData.questions];
-
-                        // Добавляем одну пустую опцию в вопрос с данным индексом
-                        if (updatedQuestions[index]) {
-                          updatedQuestions[index] = {
-                            ...updatedQuestions[index],
-                            options: [...updatedQuestions[index].options, ""],
-                          };
-                        }
-
-                        // Возвращаем обновленный массив вопросов в состоянии
+                        updatedQuestions[index] = {
+                          ...updatedQuestions[index],
+                          options: [...updatedQuestions[index].options, ""],
+                        };
                         return { ...prevData, questions: updatedQuestions };
                       });
                     }}
@@ -290,8 +277,6 @@ function EditFormModal({
               )}
             </div>
           ))}
-
-          {/* Кнопка добавления нового вопроса */}
           <Button type="button" onClick={addQuestion}>
             Add New Question
           </Button>

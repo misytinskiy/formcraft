@@ -14,7 +14,7 @@ export default async function FormList() {
       >
         <div className="text-center">
           <Plus className="w-10 h-10 mx-auto text-gray-500" />
-          <p className="mt-2 text-gray-500">Создать форму</p>
+          <p className="mt-2 text-gray-500">Create form</p>
         </div>
       </Link>
 
