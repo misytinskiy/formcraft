@@ -6,17 +6,18 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
+
 import { fetchFormById } from "@/lib/data";
 import { fetchFormResponses } from "@/lib/data";
 
 async function ResponsesPage({ params: { id } }: { params: { id: string } }) {
-  const form = await fetchFormById(id); // Получаем форму по ID с использованием Supabase
+  const form = await fetchFormById(id);
 
   if (!form) {
-    return <div>Форма не найдена</div>;
+    return <div>Form not found</div>;
   }
 
-  const responses = await fetchFormResponses(id); // Получаем ответы на форму
+  const responses = await fetchFormResponses(id);
 
   const questions = form.questions.map((question) => {
     const questionResponses = responses
@@ -78,8 +79,8 @@ async function ResponsesPage({ params: { id } }: { params: { id: string } }) {
               {question.title}
             </CardTitle>
             <CardDescription className="text-xs">
-              {question.numberOfResponses}{" "}
-              {question.numberOfResponses === 1 ? "Ответ" : "Ответов"}
+              {question.numberOfResponses}
+              {question.numberOfResponses === 1 ? "Answer" : "Answers"}
             </CardDescription>
           </CardHeader>
 
@@ -87,7 +88,7 @@ async function ResponsesPage({ params: { id } }: { params: { id: string } }) {
             {question.numberOfResponses > 0 ? (
               <BarChartComponent responses={question.responses} />
             ) : (
-              "Пока нет ответов на этот вопрос."
+              "There are no answers to this question yet."
             )}
           </CardContent>
         </Card>

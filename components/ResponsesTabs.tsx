@@ -12,14 +12,6 @@ const tabs = [
     title: "Summary",
     href: "",
   },
-  {
-    title: "Question",
-    href: "question",
-  },
-  {
-    title: "Individual",
-    href: "individual",
-  },
 ] as const;
 
 interface ResponsesTabsProps {
