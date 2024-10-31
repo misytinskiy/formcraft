@@ -68,10 +68,6 @@ export async function createForm(formData: FormData): Promise<void> {
     throw new Error("Пользователь не авторизован.");
   }
 
-  console.log("User ID:", userId);
-  console.log("Form Title:", title, "Description:", description);
-  console.log("Topic:", topic, "Image URL:", imageUrl, "Is Public:", isPublic);
-
   const { data: newForm, error: createFormError } = await supabase
     .from("Form")
     .insert({
@@ -130,11 +126,9 @@ export async function createForm(formData: FormData): Promise<void> {
     };
   });
 
-  // Убедитесь, что вопросы уникальны
   const uniqueQuestions = Array.from(
     new Map(questions.map((q) => [q.title, q])).values()
   );
-  console.log("Unique Questions to insert:", uniqueQuestions);
 
   const { error: insertQuestionsError } = await supabase
     .from("Question")
@@ -161,9 +155,9 @@ function buildQuestionsData(formData: FormData, formId: string): Question[] {
 
     return {
       id: qid.toString() || uuidv4(),
-      formId, // Добавляем formId в каждый вопрос
+      formId,
       title,
-      type: type as QuestionType, // Приводим к типу QuestionType
+      type: type as QuestionType,
       isRequired,
       options,
       order: index + 1,
@@ -233,7 +227,7 @@ export async function updateForm(
 
 // Функция для удаления формы
 export async function deleteForm(formId: string): Promise<void> {
-  // Сначала удаляем связанные ответы
+  //  удаляем связанные ответы
   const { error: responseError } = await supabase
     .from("Response")
     .delete()
@@ -245,7 +239,7 @@ export async function deleteForm(formId: string): Promise<void> {
     );
   }
 
-  // Затем удаляем связанные вопросы
+  // удаляем связанные вопросы
   const { error: questionError } = await supabase
     .from("Question")
     .delete()

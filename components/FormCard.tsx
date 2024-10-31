@@ -1,3 +1,4 @@
+// components/FormCard.tsx
 "use client";
 
 import React, { useState } from "react";
@@ -15,6 +16,7 @@ import EditFormModal from "./EditFormModal";
 import { X, Edit3 } from "lucide-react";
 import Link from "next/link";
 import { useUser } from "@clerk/nextjs";
+import { useUserContext } from "@/context/UserContext";
 
 import { FormWithRelations } from "@/types";
 import { deleteForm } from "@/lib/actions";
@@ -22,15 +24,19 @@ import { deleteForm } from "@/lib/actions";
 function FormCard({
   form,
   hideActions = false,
+  isAdmin = false,
 }: {
   form: FormWithRelations;
   hideActions?: boolean;
+  isAdmin?: boolean;
 }) {
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
   const { user } = useUser();
+  const { role } = useUserContext();
 
   const isFormOwner = user?.id === form.authorId;
+  const canEdit = isFormOwner || role === "ADMIN" || isAdmin;
 
   const handleDeleteClick = () => {
     setIsDialogOpen(true);
@@ -40,6 +46,7 @@ function FormCard({
     try {
       await deleteForm(form.id);
       setIsDialogOpen(false);
+      // Дополнительно можно обновить список форм в родительском компоненте
     } catch (error) {
       console.error("Error deleting form:", error);
     }
@@ -49,14 +56,12 @@ function FormCard({
     setIsEditModalOpen(true);
   };
 
-  console.log("Rendering FormCard with data:", form);
-
   return (
     <Card className="relative">
       <CardHeader>
         <CardTitle>{form.title}</CardTitle>
         <CardDescription>Автор: {form.author.name}</CardDescription>
-        {!hideActions && isFormOwner && (
+        {!hideActions && canEdit && (
           <div className="absolute top-2 right-2 flex space-x-2">
             <button
               onClick={handleDeleteClick}
@@ -75,7 +80,7 @@ function FormCard({
       </CardHeader>
       <CardContent>
         <Button variant={"outline"} asChild>
-          <Link href={`/dashboard/forms/${form.id}`}>More</Link>
+          <Link href={`/dashboard/forms/${form.id}`}>Подробнее</Link>
         </Button>
       </CardContent>
 

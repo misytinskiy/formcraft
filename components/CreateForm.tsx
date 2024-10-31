@@ -100,8 +100,6 @@ export default function CreateForm() {
       formData.append("questionIds[]", question.id);
     });
 
-    console.log("Questions added to FormData:", form.questions);
-
     await createForm(formData);
     router.push("/dashboard");
   };

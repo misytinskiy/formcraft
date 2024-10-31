@@ -124,7 +124,7 @@ function renderQuestionInput(
           name={question.id}
           id={question.id}
           type="text"
-          placeholder="Ваш ответ"
+          placeholder="Your answer"
           required={question.isRequired}
         />
       );
@@ -135,7 +135,7 @@ function renderQuestionInput(
           disabled={!publicForm}
           name={question.id}
           id={question.id}
-          placeholder="Ваш ответ"
+          placeholder="Your answer"
           required={question.isRequired}
         />
       );
@@ -148,7 +148,7 @@ function renderQuestionInput(
           id={question.id}
           type="number"
           min="0"
-          placeholder="Ваш ответ"
+          placeholder="Your answer"
           required={question.isRequired}
         />
       );

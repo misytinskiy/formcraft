@@ -1,5 +1,12 @@
 import { supabase } from "@/lib/supabaseClient";
-import { Form, User, Question, Response } from "@/types";
+import {
+  Form,
+  User,
+  Question,
+  Response,
+  ResponseWithRelations,
+  FormWithResponseCount,
+} from "@/types";
 
 interface FormWithRelations extends Form {
   author: User;
@@ -240,5 +247,108 @@ export async function fetchUserCreatedForms(
   } catch (error) {
     console.error("Database Error:", error);
     throw new Error("Не удалось получить созданные формы.");
+  }
+}
+
+export async function fetchAllResponses(): Promise<ResponseWithRelations[]> {
+  try {
+    const { data, error } = await supabase.from("Response").select(`
+        id, createdAt, answers, formId,
+        form:formId (
+          id, title,
+          questions:Question (
+            id, title, description, type, isRequired, order, options
+          )
+        ),
+        user:userId ( id, name, email )
+      `);
+
+    if (error) {
+      throw new Error("Ошибка при получении ответов: " + error.message);
+    }
+
+    if (data) {
+      const responses = data.map((response: any) => ({
+        ...response,
+        form: Array.isArray(response.form) ? response.form[0] : response.form,
+        user: Array.isArray(response.user) ? response.user[0] : response.user,
+      })) as ResponseWithRelations[];
+      return responses;
+    } else {
+      return [];
+    }
+  } catch (error) {
+    console.error("Database Error:", error);
+    throw new Error("Не удалось получить ответы.");
+  }
+}
+
+export async function fetchFormsWithResponses(): Promise<
+  FormWithResponseCount[]
+> {
+  try {
+    const { data, error } = await supabase.from("Form").select(`
+        id, title, description, topic, imageUrl, isPublic, authorId, createdAt, updatedAt,
+        responses:Response (
+          id
+        )
+      `);
+
+    if (error) {
+      throw new Error("Ошибка при получении форм: " + error.message);
+    }
+
+    if (data) {
+      const forms = data.map((form: any) => ({
+        ...form,
+        responseCount: form.responses ? form.responses.length : 0,
+      })) as FormWithResponseCount[];
+      return forms;
+    } else {
+      return [];
+    }
+  } catch (error) {
+    console.error("Database Error:", error);
+    throw new Error("Не удалось получить формы.");
+  }
+}
+
+export async function fetchResponsesByFormId(
+  formId: string
+): Promise<ResponseWithRelations[]> {
+  try {
+    const { data, error } = await supabase
+      .from("Response")
+      .select(
+        `
+        id, createdAt, answers,
+        form:formId (
+          id, title,
+          questions:Question (
+            id, title, description, type, isRequired, order, options
+          )
+        ),
+        user:userId ( id, name, email )
+      `
+      )
+      .eq("formId", formId);
+
+    if (error) {
+      throw new Error("Ошибка при получении ответов: " + error.message);
+    }
+
+    if (data) {
+      const responses = data.map((response: any) => ({
+        ...response,
+        form: Array.isArray(response.form) ? response.form[0] : response.form,
+        user: Array.isArray(response.user) ? response.user[0] : response.user,
+      })) as ResponseWithRelations[];
+      return responses;
+    } else {
+      return [];
+    }
+  } catch (error) {
+    console.error("Database Error:", error);
+    throw new Error("Не удалось получить ответы.");
   }
 }

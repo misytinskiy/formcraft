@@ -1,26 +1,22 @@
+import { NextResponse } from "next/server";
 import { clerkMiddleware, createRouteMatcher } from "@clerk/nextjs/server";
 import { supabase } from "@/lib/supabaseClient";
 import { clerkClient } from "@clerk/nextjs/server";
 
-const isProtectedRoute = createRouteMatcher(["/dashboard(.*)"]);
+const isProtectedRoute = createRouteMatcher(["/dashboard(.*)", "/admin(.*)"]);
 
 export default clerkMiddleware(async (auth, req) => {
   const { userId } = auth();
 
   if (userId) {
-    console.log("Authenticated user ID:", userId);
-
     try {
-      // Проверка, существует ли пользователь в таблице Supabase
-      const { data: existingUser, error: selectError } = await supabase
+      const { data: user, error: selectError } = await supabase
         .from("User")
-        .select("*")
+        .select("role, status")
         .eq("id", userId)
         .single();
 
-      // Если произошла ошибка при запросе или пользователь не найден
       if (selectError && selectError.code !== "PGRST116") {
-        // Проверяем, что ошибка не связана с "multiple rows" или отсутствием строки
         console.error(
           "Ошибка при выборке пользователя из Supabase:",
           selectError.message
@@ -28,16 +24,17 @@ export default clerkMiddleware(async (auth, req) => {
         throw new Error(selectError.message);
       }
 
-      if (!existingUser) {
-        const user = await clerkClient.users.getUser(userId);
+      if (!user) {
+        const clerkUser = await clerkClient.users.getUser(userId);
 
-        // Добавляем пользователя в таблицу User
         const { error: insertError } = await supabase.from("User").insert({
           id: userId,
-          email: user.emailAddresses[0].emailAddress,
-          name: user.firstName
-            ? `${user.firstName} ${user.lastName}`
-            : user.username || user.emailAddresses[0].emailAddress,
+          email: clerkUser.emailAddresses[0].emailAddress,
+          name: clerkUser.firstName
+            ? `${clerkUser.firstName} ${clerkUser.lastName}`
+            : clerkUser.username || clerkUser.emailAddresses[0].emailAddress,
+          role: "USER",
+          status: "ACTIVE", // По умолчанию пользователь активен
           createdAt: new Date().toISOString(),
           updatedAt: new Date().toISOString(),
         });
@@ -51,10 +48,25 @@ export default clerkMiddleware(async (auth, req) => {
           console.log("Пользователь успешно добавлен в Supabase.");
         }
       } else {
-        console.log("Пользователь уже существует в базе данных.");
+        // Проверка роли пользователя для маршрутов /admin
+        const isAdminRoute = req.nextUrl.pathname.startsWith("/admin");
+        if (isAdminRoute && user.role !== "ADMIN") {
+          return NextResponse.redirect(`${req.nextUrl.origin}/`); // Перенаправляем неадминистратора на главную
+        }
+
+        // Проверка статуса пользователя
+        if (user.status === "BLOCKED") {
+          if (req.nextUrl.pathname !== "/blocked") {
+            // Если пользователь не на странице /blocked, перенаправляем его
+            return NextResponse.redirect(`${req.nextUrl.origin}/blocked`);
+          }
+          // Если пользователь уже на странице /blocked, разрешаем доступ
+          return NextResponse.next();
+        }
       }
     } catch (error) {
       console.error("Общая ошибка при обработке пользователя:", error);
+      return NextResponse.redirect(`${req.nextUrl.origin}/error`);
     }
   }
 
@@ -66,7 +78,7 @@ export default clerkMiddleware(async (auth, req) => {
 
 export const config = {
   matcher: [
-    "/((?!_next|[^?]*\\.(?:html?|css|js(?!on)|jpe?g|webp|png|gif|svg|ttf|woff2?|ico|csv|docx?|xlsx?|zip|webmanifest)).*)",
+    "/((?!_next|[^?]*\\.(?:html?|css|js(?!on)|css|js(?!on)|jpe?g|webp|png|gif|svg|ttf|woff2?|ico|csv|docx?|xlsx?|zip|webmanifest)).*)",
     "/(api|trpc)(.*)",
   ],
 };

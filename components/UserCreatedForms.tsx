@@ -48,7 +48,7 @@ export default function UserCreatedForms() {
         </div>
       </Link>
 
-      {forms.length > 0 ? (
+      {forms.length ? (
         forms.map((form) => <FormCard key={form.id} form={form} />)
       ) : (
         <p className="text-gray-500">You haven't created any forms yet.</p>

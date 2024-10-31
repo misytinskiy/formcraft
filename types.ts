@@ -17,7 +17,7 @@ export type Response = {
   id: string;
   formId: string;
   userId?: string;
-  answers: Record<string, string | number | boolean>;
+  answers: Record<string, any>;
   createdAt: string;
 };
 
@@ -70,4 +70,24 @@ export interface FormWithRelations extends Form {
   author: User;
   questions: Question[];
   responses: Response[];
+}
+
+export type Answer = {
+  id: string;
+  responseId: string;
+  questionId: string;
+  answerText: string;
+};
+
+export interface FormWithQuestions extends Form {
+  questions: Question[];
+}
+
+export interface ResponseWithRelations extends Response {
+  form: FormWithQuestions | null;
+  user: User | null;
+}
+
+export interface FormWithResponseCount extends Form {
+  responseCount: number;
 }
