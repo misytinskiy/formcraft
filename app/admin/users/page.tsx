@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useEffect, useState } from "react";
+import React, { useCallback, useEffect, useState } from "react";
 import { supabase } from "@/lib/supabaseClient";
 import { useUserContext } from "@/context/UserContext";
 import { Check, X, Trash2, Shield, Ban } from "lucide-react";
@@ -11,11 +11,7 @@ export default function ManageUsersPage() {
   const [users, setUsers] = useState<any[]>([]);
   const [sortOrder, setSortOrder] = useState<"asc" | "desc">("asc");
 
-  useEffect(() => {
-    fetchUsers();
-  }, [sortOrder]);
-
-  const fetchUsers = async () => {
+  const fetchUsers = useCallback(async () => {
     const { data, error } = await supabase
       .from("User")
       .select("*")
@@ -26,7 +22,11 @@ export default function ManageUsersPage() {
     } else {
       setUsers(data);
     }
-  };
+  }, [sortOrder]);
+
+  useEffect(() => {
+    fetchUsers();
+  }, [sortOrder, fetchUsers]);
 
   const toggleSortOrder = () => {
     setSortOrder((prevOrder) => (prevOrder === "asc" ? "desc" : "asc"));
