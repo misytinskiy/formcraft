@@ -1,15 +1,9 @@
-import type { NextApiRequest, NextApiResponse } from "next";
+import { NextResponse } from "next/server";
 import { supabase } from "@/lib/supabaseClient";
 import JiraClient from "jira-client";
 
-export default async function handler(
-  req: NextApiRequest,
-  res: NextApiResponse
-) {
-  if (req.method !== "POST") {
-    return res.status(405).json({ error: "Метод не поддерживается" });
-  }
-
+// Обработка POST-запроса
+export async function POST() {
   // Создание клиента Jira
   const jira = new JiraClient({
     protocol: "https",
@@ -36,9 +30,12 @@ export default async function handler(
       await supabase.from("Ticket").update({ status }).eq("id", ticket.id);
     }
 
-    res.status(200).json({ message: "Статусы тикетов обновлены" });
+    return NextResponse.json({ message: "Статусы тикетов обновлены" });
   } catch (error: any) {
     console.error("Ошибка при обновлении статусов тикетов:", error);
-    res.status(500).json({ error: "Ошибка при обновлении статусов" });
+    return NextResponse.json(
+      { error: "Ошибка при обновлении статусов" },
+      { status: 500 }
+    );
   }
 }
