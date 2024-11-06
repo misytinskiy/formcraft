@@ -1,4 +1,3 @@
-// app/api/aggregated-results/route.ts
 import { NextRequest, NextResponse } from "next/server";
 import { getAggregatedResults } from "@/lib/data";
 import { verifyApiToken } from "@/lib/auth";
