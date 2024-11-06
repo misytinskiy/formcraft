@@ -17,7 +17,7 @@ export default function Header() {
   return (
     <header className="sticky top-0 flex justify-between gap-x-4 px-4 py-2.5 z-50 bg-white shadow">
       <div className="flex items-center space-x-2">
-        <Link href={"/"} className="flex items-center space-x-1">
+        <Link href={"/dashboard"} className="flex items-center space-x-1">
           <Image src={logo} alt="Logo" className="w-10 h-10" />
           <p className="text-xl text-neutral-500">FormCraft</p>
         </Link>

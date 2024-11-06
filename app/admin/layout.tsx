@@ -19,10 +19,12 @@ export default function AdminLayout({
   }
 
   return (
-    <div className="min-h-screen flex flex-col items-center bg-gray-100">
+    <div className="min-h-screen flex flex-col bg-gray-100">
       <Header />
-      <div className="container mx-auto p-8 mt-4 bg-white shadow-md rounded-md w-full max-w-4xl">
-        {children}
+      <div className="flex flex-col items-center w-full">
+        <div className="container mx-auto p-8 mt-4 bg-white shadow-md rounded-md w-full max-w-4xl">
+          {children}
+        </div>
       </div>
     </div>
   );

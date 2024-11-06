@@ -18,7 +18,7 @@ export default function ManageUsersPage() {
       .order("email", { ascending: sortOrder === "asc" });
 
     if (error) {
-      console.error("Ошибка при получении списка пользователей:", error);
+      console.error("Error getting list of users:", error);
     } else {
       setUsers(data);
     }
@@ -34,7 +34,7 @@ export default function ManageUsersPage() {
 
   const updateUserRole = async (targetUserId: string, newRole: string) => {
     if (targetUserId === userId && newRole !== "ADMIN") {
-      toast.error("Вы не можете снять права администратора у самого себя.");
+      toast.error("You cannot remove administrator rights from yourself.");
       return;
     }
 
@@ -44,16 +44,16 @@ export default function ManageUsersPage() {
       .eq("id", targetUserId);
 
     if (error) {
-      toast.error("Ошибка при обновлении роли пользователя");
+      toast.error("Error updating user role");
     } else {
-      toast.success("Роль пользователя обновлена");
+      toast.success("User role updated");
       fetchUsers();
     }
   };
 
   const updateUserStatus = async (targetUserId: string, newStatus: string) => {
     if (targetUserId === userId) {
-      toast.error("Вы не можете изменить свой собственный статус.");
+      toast.error("You cannot change your own status.");
       return;
     }
 
@@ -63,16 +63,16 @@ export default function ManageUsersPage() {
       .eq("id", targetUserId);
 
     if (error) {
-      toast.error("Ошибка при обновлении статуса пользователя");
+      toast.error("Error updating user status");
     } else {
-      toast.success("Статус пользователя обновлен");
+      toast.success("User status updated");
       fetchUsers();
     }
   };
 
   const deleteUser = async (targetUserId: string) => {
     if (targetUserId === userId) {
-      toast.error("Вы не можете удалить свой собственный аккаунт.");
+      toast.error("You cannot delete your own account.");
       return;
     }
 
@@ -82,16 +82,16 @@ export default function ManageUsersPage() {
       .eq("id", targetUserId);
 
     if (error) {
-      toast.error("Ошибка при удалении пользователя");
+      toast.error("Error deleting user");
     } else {
-      toast.success("Пользователь удален");
+      toast.success("User deleted");
       fetchUsers();
     }
   };
 
   return (
     <div>
-      <h2 className="text-2xl font-bold mb-4">Управление пользователями</h2>
+      <h2 className="text-2xl font-bold mb-4">User Management</h2>
       <table className="min-w-full bg-white border rounded shadow-md">
         <thead>
           <tr>
@@ -101,10 +101,10 @@ export default function ManageUsersPage() {
             >
               Email
             </th>
-            <th className="py-2 px-4 border-b">Имя</th>
-            <th className="py-2 px-4 border-b">Роль</th>
-            <th className="py-2 px-4 border-b">Статус</th>
-            <th className="py-2 px-4 border-b">Действия</th>
+            <th className="py-2 px-4 border-b">Name</th>
+            <th className="py-2 px-4 border-b">Role</th>
+            <th className="py-2 px-4 border-b">Status</th>
+            <th className="py-2 px-4 border-b">Actions</th>
           </tr>
         </thead>
         <tbody>

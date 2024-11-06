@@ -30,7 +30,7 @@ const createHandler = async (req: NextApiRequest, res: NextApiResponse) => {
   if (!accessToken || !refreshToken || !instanceUrl) {
     console.error("Missing Salesforce tokens");
     res.status(400).json({
-      error: "Salesforce токены не найдены. Пожалуйста, авторизуйтесь.",
+      error: "Salesforce tokens not found. Please log in.",
     });
     return;
   }
@@ -59,11 +59,9 @@ const createHandler = async (req: NextApiRequest, res: NextApiResponse) => {
     const { accountData, contactData } = req.body;
     console.log("Account data to be created:", accountData);
 
-    // Проверяем соединение перед вызовом create
     await conn.identity();
     console.log("Connection to Salesforce is valid.");
 
-    // Создайте Account
     const accountResults = await conn.sobject("Account").create(accountData);
     console.log("Raw accountResults:", accountResults);
 
@@ -75,17 +73,15 @@ const createHandler = async (req: NextApiRequest, res: NextApiResponse) => {
     if (!accountResult || !accountResult.success) {
       console.error("Error creating Account:", accountResult?.errors);
       res.status(500).json({
-        error: "Ошибка при создании Account",
-        details: accountResult?.errors || "Неизвестная ошибка",
+        error: "Error creating Account",
+        details: accountResult?.errors || "Unknown error",
       });
       return;
     }
 
-    // Свяжите Contact с созданным Account
     contactData.AccountId = accountResult.id;
     console.log("Contact data to be created:", contactData);
 
-    // Создайте Contact
     const contactResults = await conn.sobject("Contact").create(contactData);
     console.log("Raw contactResults:", contactResults);
 
@@ -97,17 +93,17 @@ const createHandler = async (req: NextApiRequest, res: NextApiResponse) => {
     if (!contactResult || !contactResult.success) {
       console.error("Error creating Contact:", contactResult?.errors);
       res.status(500).json({
-        error: "Ошибка при создании Contact",
-        details: contactResult?.errors || "Неизвестная ошибка",
+        error: "Error creating Contact",
+        details: contactResult?.errors || "Unknown error",
       });
       return;
     }
 
-    res.status(200).json({ message: "Успешно создано" });
+    res.status(200).json({ message: "Successfully created" });
   } catch (error: any) {
     console.error("Salesforce API Error:", error);
     res.status(500).json({
-      error: "Ошибка при взаимодействии с Salesforce",
+      error: "Error interacting with Salesforce",
       details: error.message,
     });
   }

@@ -1,4 +1,3 @@
-// app/admin/forms/page.tsx
 "use client";
 
 import React, { useEffect, useState } from "react";
@@ -29,10 +28,10 @@ export default function ManageFormsPage() {
 
   return (
     <div>
-      <h2 className="text-2xl font-bold mb-4">Управление формами</h2>
+      <h2 className="text-2xl font-bold mb-4">Managing forms</h2>
       <Input
         type="text"
-        placeholder="Поиск по названию формы"
+        placeholder="Search by form name"
         value={searchQuery}
         onChange={(e) => setSearchQuery(e.target.value)}
         className="mb-4"
@@ -43,7 +42,7 @@ export default function ManageFormsPage() {
             <FormCard key={form.id} form={form} isAdmin />
           ))
         ) : (
-          <p>Формы не найдены.</p>
+          <p>No forms found.</p>
         )}
       </div>
     </div>

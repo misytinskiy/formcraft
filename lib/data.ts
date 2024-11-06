@@ -374,7 +374,6 @@ export async function getAggregatedResults(userId: string): Promise<any[]> {
     return [];
   }
 
-  // Обработка данных и вычисление агрегированных результатов
   const results = data.map((form) => {
     const numberOfAnswers = form.responses.length;
     const aggregatedResults = calculateAggregatedResults(
@@ -386,7 +385,7 @@ export async function getAggregatedResults(userId: string): Promise<any[]> {
       id: form.id,
       title: form.title,
       numberOfAnswers,
-      questions: form.questions, // Добавлено это поле
+      questions: form.questions,
       aggregatedResults,
     };
   });

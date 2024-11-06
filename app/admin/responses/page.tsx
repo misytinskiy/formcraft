@@ -20,7 +20,7 @@ export default function ManageResponsesPage() {
         const forms = await fetchFormsWithResponses();
         setForms(forms);
       } catch (error) {
-        console.error("Ошибка при загрузке форм:", error);
+        console.error("Error loading forms:", error);
       }
     };
 
@@ -52,17 +52,17 @@ export default function ManageResponsesPage() {
 
   return (
     <div>
-      <h2 className="text-2xl font-bold mb-4">Управление ответами</h2>
+      <h2 className="text-2xl font-bold mb-4">Managing responses</h2>
       <div className="flex items-center mb-4">
         <Input
           type="text"
-          placeholder="Поиск по названию формы"
+          placeholder="Search by form name"
           value={searchQuery}
           onChange={(e) => setSearchQuery(e.target.value)}
           className="mr-4"
         />
         <Button variant="outline" onClick={toggleSortOrder}>
-          Сортировка {sortOrder === "asc" ? <ChevronDown /> : <ChevronUp />}
+          Sorting {sortOrder === "asc" ? <ChevronDown /> : <ChevronUp />}
         </Button>
       </div>
       <div className="space-y-4">
@@ -77,11 +77,11 @@ export default function ManageResponsesPage() {
                 >
                   {expandedFormIds.includes(form.id) ? (
                     <>
-                      Скрыть ответы <ChevronUp />
+                      Hide answers <ChevronUp />
                     </>
                   ) : (
                     <>
-                      Показать ответы ({form.responseCount}) <ChevronDown />
+                      Show answers ({form.responseCount}) <ChevronDown />
                     </>
                   )}
                 </Button>
@@ -92,7 +92,7 @@ export default function ManageResponsesPage() {
             </div>
           ))
         ) : (
-          <p>Формы не найдены.</p>
+          <p>No forms found.</p>
         )}
       </div>
     </div>

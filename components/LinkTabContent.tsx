@@ -11,8 +11,8 @@ import { toast } from "sonner";
 
 function LinkTabContent() {
   const params = useParams();
-  const id = params.id;
-  const url = `${window.location.origin}/forms/${id}`;
+  const id = params?.id;
+  const url = id ? `${window.location.origin}/forms/${id}` : "";
 
   return (
     <TabsContent value={"link"} className="px-4 py-4 space-y-3">

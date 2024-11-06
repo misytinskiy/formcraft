@@ -1,10 +1,9 @@
-// app/salesforce/form/page.tsx
-
 "use client";
 
 import { useState, useEffect } from "react";
 import { useUser } from "@clerk/nextjs";
 import { useRouter } from "next/navigation";
+import Header from "@/components/Header";
 
 export default function SalesforceForm() {
   const [userData, setUserData] = useState<any>(null);
@@ -18,7 +17,7 @@ export default function SalesforceForm() {
       router.push("/sign-in");
     } else {
       setUserData({
-        company: "", // Если у вас есть данные о компании пользователя
+        company: "",
         lastName: user.lastName || "",
         email: user.primaryEmailAddress?.emailAddress || "",
       });
@@ -49,48 +48,60 @@ export default function SalesforceForm() {
     });
 
     if (response.ok) {
-      alert("Данные успешно отправлены в Salesforce!");
+      alert("Data successfully sent to Salesforce!");
     } else {
-      alert("Ошибка при отправке данных в Salesforce.");
+      alert("Error sending data to Salesforce.");
     }
   };
 
-  if (!userData) return <p>Загрузка...</p>;
+  if (!userData) return <p>Loading...</p>;
 
   return (
-    <form onSubmit={handleSubmit}>
-      <h2>Интеграция с Salesforce</h2>
-      <label>
-        Название компании (Account Name):
-        <input
-          type="text"
-          name="accountName"
-          defaultValue={userData.company}
-          required
-        />
-      </label>
-      <br />
-      <label>
-        Фамилия (Last Name):
-        <input
-          type="text"
-          name="lastName"
-          defaultValue={userData.lastName}
-          required
-        />
-      </label>
-      <br />
-      <label>
-        Email:
-        <input
-          type="email"
-          name="email"
-          defaultValue={userData.email}
-          required
-        />
-      </label>
-      <br />
-      <button type="submit">Отправить в Salesforce</button>
-    </form>
+    <>
+      <Header />
+      <main className="max-w-4xl mx-auto py-8">
+        <h1 className="text-2xl font-semibold mb-4">Salesforce Integration</h1>
+        <div className="bg-white shadow rounded p-6">
+          <form onSubmit={handleSubmit} className="space-y-4">
+            <div>
+              <label className="block text-lg font-medium">Account Name:</label>
+              <input
+                type="text"
+                name="accountName"
+                defaultValue={userData.company}
+                required
+                className="w-full px-4 py-2 border rounded"
+              />
+            </div>
+            <div>
+              <label className="block text-lg font-medium">Last Name:</label>
+              <input
+                type="text"
+                name="lastName"
+                defaultValue={userData.lastName}
+                required
+                className="w-full px-4 py-2 border rounded"
+              />
+            </div>
+            <div>
+              <label className="block text-lg font-medium">Email:</label>
+              <input
+                type="email"
+                name="email"
+                defaultValue={userData.email}
+                required
+                className="w-full px-4 py-2 border rounded"
+              />
+            </div>
+            <button
+              type="submit"
+              className="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700"
+            >
+              Send to Salesforce
+            </button>
+          </form>
+        </div>
+      </main>
+    </>
   );
 }

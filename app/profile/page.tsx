@@ -10,7 +10,7 @@ export default function ProfilePage() {
   const { isLoaded, isSignedIn, user } = useUser();
   const [apiToken, setApiToken] = useState<string | null>(null);
 
-  if (!isLoaded) return <p>Загрузка...</p>;
+  if (!isLoaded) return <p>Loading...</p>;
 
   if (!isSignedIn) {
     router.push("/sign-in");
@@ -33,10 +33,10 @@ export default function ProfilePage() {
     <>
       <Header />
       <main className="max-w-4xl mx-auto py-8">
-        <h1 className="text-2xl font-semibold mb-4">Профиль пользователя</h1>
+        <h1 className="text-2xl font-semibold mb-4">User profile</h1>
         <div className="bg-white shadow rounded p-6">
           <p className="text-lg mb-2">
-            <span className="font-medium">Имя:</span> {user.fullName}
+            <span className="font-medium">Name:</span> {user.fullName}
           </p>
           <p className="text-lg mb-4">
             <span className="font-medium">Email:</span>{" "}
@@ -47,18 +47,18 @@ export default function ProfilePage() {
               onClick={handleSalesforceIntegration}
               className="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700"
             >
-              Интегрировать с Salesforce
+              Integrate with Salesforce
             </button>
             <button
               onClick={generateApiToken}
               className="px-4 py-2 bg-green-600 text-white rounded hover:bg-green-700"
             >
-              Сгенерировать API-токен
+              Generate API token
             </button>
           </div>
           {apiToken && (
             <div className="mt-4">
-              <p className="font-medium">Ваш API-токен:</p>
+              <p className="font-medium">Your API token:</p>
               <p className="bg-gray-100 p-2 rounded">{apiToken}</p>
             </div>
           )}
