@@ -9,6 +9,7 @@ import { Suspense } from "react";
 import { Shield } from "lucide-react";
 import logo from "@/public/logo.png";
 import { useUserContext } from "@/context/UserContext";
+import { User as UserIcon } from "lucide-react";
 
 export default function Header() {
   const { role } = useUserContext();
@@ -32,6 +33,11 @@ export default function Header() {
               <Shield className="w-6 h-6" />
             </Link>
           )}
+
+          <Link href="/profile" className="text-gray-600 hover:text-gray-800">
+            <UserIcon className="w-6 h-6" />
+          </Link>
+
           <UserButton />
         </div>
       </div>

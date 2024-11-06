@@ -1,32 +1,8 @@
-export type User = {
+export interface FormWithRelations {
   id: string;
-  email: string;
-  name: string | null;
-  role: "USER" | "ADMIN";
-  status: "ACTIVE" | "BLOCKED";
-  createdAt: string;
-  updatedAt: string;
-};
-
-export type Tag = {
-  id: string;
-  name: string;
-};
-
-export type Response = {
-  id: string;
-  formId: string;
-  userId?: string;
-  answers: Record<string, any>;
-  createdAt: string;
-};
-
-export enum QuestionType {
-  SINGLE_LINE_TEXT = "SINGLE_LINE_TEXT",
-  MULTI_LINE_TEXT = "MULTI_LINE_TEXT",
-  POSITIVE_INTEGER = "POSITIVE_INTEGER",
-  CHECKBOX = "CHECKBOX",
-  RADIO_BUTTON = "RADIO_BUTTON",
+  title: string;
+  questions: Question[];
+  responses: Response[];
 }
 
 export type Question = {
@@ -39,6 +15,38 @@ export type Question = {
   order: number;
   options: string[];
 };
+
+export type Response = {
+  id: string;
+  formId: string;
+  userId?: string;
+  answers: Record<string, any>;
+  createdAt: string;
+};
+
+export type User = {
+  id: string;
+  email: string;
+  name: string | null;
+  role: "USER" | "ADMIN";
+  status: "ACTIVE" | "BLOCKED";
+  createdAt: string;
+  updatedAt: string;
+  apiToken?: string;
+};
+
+export type Tag = {
+  id: string;
+  name: string;
+};
+
+export enum QuestionType {
+  SINGLE_LINE_TEXT = "SINGLE_LINE_TEXT",
+  MULTI_LINE_TEXT = "MULTI_LINE_TEXT",
+  POSITIVE_INTEGER = "POSITIVE_INTEGER",
+  CHECKBOX = "CHECKBOX",
+  RADIO_BUTTON = "RADIO_BUTTON",
+}
 
 export type Like = {
   id: string;

@@ -352,3 +352,134 @@ export async function fetchResponsesByFormId(
     throw new Error("Не удалось получить ответы.");
   }
 }
+
+export async function getAggregatedResults(userId: string): Promise<any[]> {
+  const { data, error } = await supabase
+    .from("Form")
+    .select(
+      `
+      id,
+      title,
+      questions:Question(*),
+      responses:Response(*)
+    `
+    )
+    .eq("authorId", userId);
+
+  if (error) {
+    throw new Error(error.message);
+  }
+
+  if (!data) {
+    return [];
+  }
+
+  // Обработка данных и вычисление агрегированных результатов
+  const results = data.map((form) => {
+    const numberOfAnswers = form.responses.length;
+    const aggregatedResults = calculateAggregatedResults(
+      form.responses,
+      form.questions
+    );
+
+    return {
+      id: form.id,
+      title: form.title,
+      numberOfAnswers,
+      questions: form.questions, // Добавлено это поле
+      aggregatedResults,
+    };
+  });
+
+  return results;
+}
+
+function calculateAggregatedResults(responses: any[], questions: any[]) {
+  const aggregatedResults: Record<string, any> = {};
+
+  if (responses.length === 0) {
+    return aggregatedResults;
+  }
+
+  questions.forEach((question: any) => {
+    const questionId = question.id;
+    const questionType = question.type; // Ваш реальный тип вопроса
+    const answers = responses.map((response) => response.answers[questionId]);
+
+    if (questionType === "POSITIVE_INTEGER") {
+      const numbers = answers.map(Number).filter((n) => !isNaN(n));
+      const sum = numbers.reduce((a, b) => a + b, 0);
+      const average = sum / numbers.length;
+      const min = Math.min(...numbers);
+      const max = Math.max(...numbers);
+
+      aggregatedResults[questionId] = {
+        questionTitle: question.title,
+        average,
+        min,
+        max,
+      };
+    } else if (
+      questionType === "SINGLE_LINE_TEXT" ||
+      questionType === "MULTI_LINE_TEXT" ||
+      questionType === "CHECKBOX" ||
+      questionType === "RADIO_BUTTON"
+    ) {
+      // Для текстовых ответов или вариантов подсчитываем частоту каждого ответа
+      const frequency: Record<string, number> = {};
+      answers.forEach((answer) => {
+        if (Array.isArray(answer)) {
+          // Если ответ - массив (например, для CHECKBOX)
+          answer.forEach((ans) => {
+            if (ans) {
+              frequency[ans] = (frequency[ans] || 0) + 1;
+            }
+          });
+        } else if (answer) {
+          frequency[answer] = (frequency[answer] || 0) + 1;
+        }
+      });
+
+      // Получаем несколько самых популярных ответов
+      const popularAnswers = Object.entries(frequency)
+        .sort((a, b) => b[1] - a[1])
+        .slice(0, 3)
+        .map((entry) => ({ answer: entry[0], count: entry[1] }));
+
+      aggregatedResults[questionId] = {
+        questionTitle: question.title,
+        popularAnswers,
+      };
+    } else {
+      // Обработка других типов вопросов, если есть
+    }
+  });
+
+  return aggregatedResults;
+}
+
+export async function getUserById(userId: string): Promise<User | null> {
+  const { data, error } = await supabase
+    .from("users")
+    .select("*")
+    .eq("id", userId)
+    .single();
+
+  if (error) {
+    console.error("Error fetching user:", error);
+    return null;
+  }
+
+  return data as User;
+}
+
+export async function updateUser(userId: string, updates: Partial<User>) {
+  const { error } = await supabase
+    .from("User")
+    .update(updates)
+    .eq("id", userId);
+
+  if (error) {
+    throw new Error(error.message);
+  }
+}
