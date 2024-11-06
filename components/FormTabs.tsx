@@ -37,7 +37,7 @@ function FormTabs({
           const isActive =
             tab.href === ""
               ? pathname === formIdPage
-              : pathname.includes(`${formIdPage}/${tab.href}`);
+              : pathname?.includes(`${formIdPage}/${tab.href}`);
 
           return (
             <TabsTrigger
