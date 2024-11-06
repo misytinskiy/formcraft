@@ -4,6 +4,7 @@ import { useRouter } from "next/navigation";
 import { useUser } from "@clerk/nextjs";
 import { useState } from "react";
 import Header from "@/components/Header";
+import Link from "next/link";
 
 export default function ProfilePage() {
   const router = useRouter();
@@ -62,6 +63,14 @@ export default function ProfilePage() {
               <p className="bg-gray-100 p-2 rounded">{apiToken}</p>
             </div>
           )}
+          <div className="mt-6">
+            <Link
+              href="/profile/tickets"
+              className="text-blue-600 hover:underline"
+            >
+              Мои тикеты
+            </Link>
+          </div>
         </div>
       </main>
     </>

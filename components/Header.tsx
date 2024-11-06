@@ -10,6 +10,7 @@ import { Shield } from "lucide-react";
 import logo from "@/public/logo.png";
 import { useUserContext } from "@/context/UserContext";
 import { User as UserIcon } from "lucide-react";
+import { HelpCircle } from "lucide-react";
 
 export default function Header() {
   const { role } = useUserContext();
@@ -36,6 +37,10 @@ export default function Header() {
 
           <Link href="/profile" className="text-gray-600 hover:text-gray-800">
             <UserIcon className="w-6 h-6" />
+          </Link>
+
+          <Link href="/support" className="text-gray-600 hover:text-gray-800">
+            <HelpCircle className="w-6 h-6" />
           </Link>
 
           <UserButton />
